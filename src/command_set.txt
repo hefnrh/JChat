@@ -1,0 +1,19 @@
+$command can't be changed, $<parameter> can be changed
+
+client can send:
+	$login $<username>
+	$logout
+	$talk $public $<content>
+	$talk $private $<receiver> $<content>
+	$file $req $<receiver> $<filename> $<size>
+	$file $res $<receiver> $true/false
+	
+server can send:
+	$online $<username1> $<username2> ...
+	$offline $<username1> $<username2> ...
+	$talk $public $<speaker> $<content>
+	$talk $private $<speaker> $<content>
+	$file $req $<sender> $<filename> $<size>
+	$file $res $<receiver> $true/false $<port>
+	$file $<sender> $<port>
+	$error $<message>
