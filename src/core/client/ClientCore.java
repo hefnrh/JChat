@@ -3,6 +3,7 @@ package core.client;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -141,8 +142,45 @@ public class ClientCore implements Messenger {
 
 	@Override
 	public boolean receiveFile(File file, int port) {
-		// TODO Auto-generated method stub
-		return false;
+		Socket recvSock = new Socket();
+		// connect
+		try {
+			recvSock.connect(new InetSocketAddress(sock.getInetAddress()
+					.getHostAddress(), port), 5000);
+		} catch (IOException e) {
+			clientCallBack.error(e.getMessage());
+			try {
+				recvSock.close();
+			} catch (IOException e1) {
+				e.printStackTrace();
+			}
+			return false;
+		}
+		// read from socket and write to file system
+		try (OutputStream os = new FileOutputStream(file);
+				InputStream is = recvSock.getInputStream();) {
+			byte[] buf = new byte[8192];
+			int read;
+			while ((read = is.read(buf)) >= 0) {
+				os.write(buf, 0, read);
+			}
+		} catch (IOException e) {
+			clientCallBack.error(e.getMessage());
+			try {
+				recvSock.close();
+			} catch (IOException e1) {
+				e.printStackTrace();
+			}
+			return false;
+		}
+		
+		try {
+			recvSock.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return true;
+		
 	}
 
 	/**
