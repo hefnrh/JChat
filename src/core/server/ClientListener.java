@@ -45,7 +45,6 @@ public class ClientListener extends Thread {
 			}
 		}
 		pw.println(content);
-		System.out.println(content); // for debug
 		return true;
 	}
 
@@ -54,16 +53,29 @@ public class ClientListener extends Thread {
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(
 				sock.getInputStream()));) {
 			// first message is login command
-			String loginmsg = br.readLine();
-			String name = loginmsg.substring(loginmsg.indexOf(" $") + 2);
+			String msg = br.readLine();
+			String name = msg.substring(msg.indexOf(" $") + 2);
 			this.name = name;
 			ce.add(name, this);
 			while (sock != null && sock.isConnected()
 					&& !sock.isInputShutdown()) {
-				ce.exec(br.readLine(), name);
+				msg = br.readLine();
+				if (msg == null) {
+					System.out.println("read null from " + name);
+					throw new IOException();
+				}
+				ce.exec(msg, name);
 			}
 		} catch (IOException e) {
 			ce.remove(name);
+		}
+	}
+
+	public void close() {
+		try {
+			sock.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
