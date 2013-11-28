@@ -94,7 +94,7 @@ public class ClientCore implements Messenger {
 
 	@Override
 	public boolean fileRequestResponse(String fileSender, boolean accepted) {
-		return send("$file $res $" + accepted);
+		return send("$file $res $" + fileSender + " $" + accepted);
 	}
 
 	@Override

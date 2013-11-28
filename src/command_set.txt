@@ -5,15 +5,15 @@ client can send:
 	$logout
 	$talk $public $<content>
 	$talk $private $<receiver> $<content>
-	$file $req $<receiver> $<filename> $<size>
-	$file $res $<receiver> $true/false
+	$file $req $<fileReceiver> $<filename> $<size>
+	$file $res $<fileSender> $true/false
 	
 server can send:
 	$online $<username1> $<username2> ...
 	$offline $<username1> $<username2> ...
 	$talk $public $<speaker> $<content>
 	$talk $private $<speaker> $<content>
-	$file $req $<sender> $<filename> $<size>
-	$file $res $<receiver> $true/false $<port>
-	$file $<sender> $<port>
+	$file $req $<fileSender> $<filename> $<size>
+	$file $res $<fileReceiver> $true/false $<port>
+	$file $<fileSender> $<port>
 	$error $<message>
