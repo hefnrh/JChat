@@ -216,9 +216,13 @@ public class ClientCore implements Messenger {
 			public void run() {
 				try (BufferedReader br = new BufferedReader(
 						new InputStreamReader(sock.getInputStream()));) {
+					String msg;
 					while (sock != null && sock.isConnected()
 							&& !sock.isInputShutdown()) {
-						exec(br.readLine());
+						msg = br.readLine();
+						if (msg == null)
+							throw new IOException("connection is down!");
+						exec(msg);
 					}
 				} catch (IOException e) {
 					clientCallBack.error(e.getMessage());
@@ -226,7 +230,7 @@ public class ClientCore implements Messenger {
 				listener = null;
 			}
 		});
-		listener.setDaemon(false);
+		listener.setDaemon(true);
 		listener.start();
 	}
 
@@ -265,12 +269,12 @@ public class ClientCore implements Messenger {
 		case "$file":
 			String[] params = p.split(command);
 			if (command.startsWith("$req")) {
-				clientCallBack.fileRequest(params[1], params[2],
-						Long.parseLong(params[3]));
+				clientCallBack.fileRequest(params[2], params[3],
+						Long.parseLong(params[4]));
 			} else if (command.startsWith("$res")) {
-				clientCallBack.fileResponse(params[1],
-						Boolean.parseBoolean(params[2]),
-						Integer.parseInt(params[3]));
+				clientCallBack.fileResponse(params[2],
+						Boolean.parseBoolean(params[3]),
+						Integer.parseInt(params[4]));
 			} else {
 				clientCallBack.fileReceive(params[1],
 						Integer.parseInt(params[2]));
