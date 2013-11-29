@@ -1,5 +1,7 @@
 package test;
 
+import gui.client.Startup;
+
 import java.io.File;
 
 import core.client.ClientCallBack;
@@ -9,15 +11,57 @@ import core.server.Server;
 
 /**
  * this class is used to test basic chat system functions
+ * 
  * @author guyifan
- *
+ * 
  */
 public class BasicClient implements ClientCallBack {
-	
+
+	// for debug
+	private static boolean debug = true;
+
+	public static void main(String[] args) {
+		if (!debug) {
+			// TODO
+		} else {
+			testStartup();
+		}
+	}
+
+	public static void testCoreLogic() {
+		Server server = new Server(12700);
+		server.start();
+		BasicClient bc1 = new BasicClient();
+		bc1.setMessenger(new ClientCore(bc1));
+		BasicClient bc2 = new BasicClient();
+		bc2.setMessenger(new ClientCore(bc2));
+		bc1.login("John");
+		bc2.login("Bob");
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		bc1.fileReq("Bob");
+		try {
+			Thread.sleep(6000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		server.waitFor();
+	}
+
+	public static void testStartup() {
+		Startup start = new Startup();
+		start.setVisible(true);
+	}
+
 	private Messenger m = null;
+
 	public void setMessenger(Messenger m) {
 		this.m = m;
 	}
+
 	@Override
 	public void online(String[] names) {
 		StringBuilder sb = new StringBuilder("online:");
@@ -46,13 +90,15 @@ public class BasicClient implements ClientCallBack {
 
 	@Override
 	public void fileRequest(String from, String filename, long filesize) {
-		System.out.println("filereq: " + from + ": " + filename + ", size: " + filesize);
+		System.out.println("filereq: " + from + ": " + filename + ", size: "
+				+ filesize);
 		m.fileRequestResponse(from, true);
 	}
 
 	@Override
 	public void fileResponse(String from, boolean accepted, int port) {
-		System.out.println("fileres: " + from + ": " + accepted + " port: " + port);
+		System.out.println("fileres: " + from + ": " + accepted + " port: "
+				+ port);
 		m.sendFile(new File("LICENSE"), port);
 	}
 
@@ -66,56 +112,33 @@ public class BasicClient implements ClientCallBack {
 	public void error(String message) {
 		System.out.println(message);
 	}
-	
+
 	public void login(String name) {
 		m.login(name, "127.0.0.1", 12700);
 	}
-	
+
 	public void sendPub() {
 		m.sendPublicMessage("send public test");
 	}
-	
+
 	public void sendPri(String name) {
 		m.sendPrivateMessage(name, "send private test");
 	}
-	
+
 	public void logout() {
 		m.logout();
 	}
-	
+
 	public void fileReq(String name) {
 		m.fileSendRequest(name, "test.zip", 123456);
 	}
-	
-	
+
 	public void sendFile(File file, int port) {
 		m.sendFile(file, port);
 	}
-	
+
 	public void recvFile(File file, int port) {
 		m.receiveFile(file, port);
-	}
-	public static void main(String[] args) {
-		Server server = new Server(12700);
-		server.start();
-		BasicClient bc1 = new BasicClient();
-		bc1.setMessenger(new ClientCore(bc1));
-		BasicClient bc2 = new BasicClient();
-		bc2.setMessenger(new ClientCore(bc2));
-		bc1.login("John");
-		bc2.login("Bob");
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		bc1.fileReq("Bob");
-		try {
-			Thread.sleep(6000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		server.waitFor();
 	}
 
 }
