@@ -4,9 +4,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
@@ -31,6 +33,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		this.host = host;
 		this.port = port;
 
+		setIconImage(new ImageIcon(MainFrame.class.getResource("mainIcon.jpg"))
+				.getImage());
 		setTitle("JChat - " + host + ":" + port);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
@@ -38,6 +42,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			public void windowClosed(WindowEvent e) {
 				MainFrame.this.parent.saveSetting();
 			}
+
 			@Override
 			public void windowClosing(WindowEvent e) {
 				MainFrame.this.parent.saveSetting();
@@ -52,15 +57,15 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				int index = tabbedPane.getSelectedIndex();
-				ChatPanel cp = (ChatPanel) tabbedPane
-						.getTabComponentAt(index);
+				ChatPanel cp = (ChatPanel) tabbedPane.getTabComponentAt(index);
 				cp.loadConfigPanel();
 				tabbedPane.setTitleAt(index, cp.getName());
 			}
 		});
 		tabbedPane.setBounds(10, 10, 763, 541);
 		getContentPane().add(tabbedPane);
-		
+
+		privatePanel = new HashMap<>();
 		configPanel = new ConfigPanel();
 		publicPanel = new PublicPanel(null, configPanel, "public");
 		tabbedPane.addTab("public", publicPanel);
@@ -103,7 +108,6 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void talkPrivate(String from, String content) {
-		// TODO Auto-generated method stub
 		PrivatePanel pp;
 		if (!privatePanel.containsKey(from)) {
 			pp = new PrivatePanel(m, configPanel, from);
@@ -112,7 +116,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			pp = privatePanel.get(from);
 		pp.appendMessage(from, content);
 		if (tabbedPane.getSelectedComponent() != pp)
-			tabbedPane.setTitleAt(tabbedPane.indexOfTab	(from), "NEW MESSAGE!");
+			tabbedPane.setTitleAt(tabbedPane.indexOfTab(from), "NEW MESSAGE!");
 	}
 
 	@Override
@@ -138,13 +142,14 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		JOptionPane.showMessageDialog(this, message, "ERROR",
 				JOptionPane.ERROR_MESSAGE);
 	}
-	
-	public void getSetting(Properties p) {
+
+	public Properties getSetting(Properties p) {
 		p.setProperty("color", configPanel.getSelectedColor().toString());
 		p.setProperty("font", configPanel.getSelectedFontName());
 		p.setProperty("size", configPanel.getSelectedFontSize() + "");
 		p.setProperty("bold", configPanel.isBold() + "");
 		p.setProperty("italic", configPanel.isItalic() + "");
 		p.setProperty("underline", configPanel.isUnderine() + "");
+		return p;
 	}
 }

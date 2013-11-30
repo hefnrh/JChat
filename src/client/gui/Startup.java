@@ -5,7 +5,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -29,11 +28,11 @@ public class Startup extends JFrame {
 	private MainFrame mainFrame;
 
 	public Startup() {
-		setIconImage(new ImageIcon(Startup.class.getResource("face1.jpeg"))
+		setIconImage(new ImageIcon(Startup.class.getResource("startIcon.jpeg"))
 				.getImage());
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
-		setTitle("JChat by guyifan");
+		setTitle("JChat by GuYifan");
 		setSize(338, 129);
 		getContentPane().setLayout(null);
 		addWindowListener(new WindowAdapter() {
@@ -41,6 +40,7 @@ public class Startup extends JFrame {
 			public void windowClosing(WindowEvent e) {
 				saveSetting();
 			}
+
 			@Override
 			public void windowClosed(WindowEvent e) {
 				saveSetting();
@@ -94,6 +94,7 @@ public class Startup extends JFrame {
 	}
 
 	private void btnLoginClicked() {
+		// check input
 		String name = textField.getText().trim();
 		if (name.contains(" ") || name.contains("\t")) {
 			JOptionPane.showMessageDialog(this,
@@ -112,7 +113,7 @@ public class Startup extends JFrame {
 					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		// TODO login
+		// login
 		mainFrame = new MainFrame(this, name, host, port);
 		mainFrame.setMessenger(new ClientCore(mainFrame));
 		if (!mainFrame.login()) {
@@ -138,10 +139,9 @@ public class Startup extends JFrame {
 		}
 		try {
 			setting.store(new FileOutputStream("config.ini"), null);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "can not save settings",
+					"ERROR", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -154,9 +154,9 @@ public class Startup extends JFrame {
 				textField_1.setText(setting.getProperty("host", ""));
 				textField_2.setText(setting.getProperty("port", "12700"));
 				rdbtnRememberAll.setSelected(true);
-				setBounds(Integer.parseInt(setting.getProperty("startX", "0")),
-						Integer.parseInt(setting.getProperty("startY", "0")),
-						getWidth(), getHeight());
+				setLocation(
+						Integer.parseInt(setting.getProperty("startX", "0")),
+						Integer.parseInt(setting.getProperty("startY", "0")));
 			}
 		} catch (Exception e) {
 			return;

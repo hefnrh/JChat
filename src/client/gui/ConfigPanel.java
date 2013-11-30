@@ -82,24 +82,42 @@ public class ConfigPanel extends JPanel {
 	public Color getSelectedColor() {
 		return (Color) colorBox.getSelectedItem();
 	}
+	public void setColor(Color color) {
+		colorBox.setSelectedItem(color);
+	}
 	
 	public String getSelectedFontName() {
 		return (String) fontBox.getSelectedItem();
+	}
+	public void setFontName(String font) {
+		fontBox.setSelectedItem(font);
 	}
 	
 	public int getSelectedFontSize() {
 		return (int) sizeBox.getSelectedItem();
 	}
+	public void setFontSize(int size) {
+		sizeBox.setSelectedItem(size);
+	}
 	
 	public boolean isBold() {
 		return tglbtnB.isSelected();
+	}
+	public void setBold(boolean b) {
+		tglbtnB.setSelected(b);
 	}
 	
 	public boolean isItalic() {
 		return tglbtnI.isSelected();
 	}
+	public void setItalic(boolean b) {
+		tglbtnI.setSelected(b);
+	}
 	
 	public boolean isUnderine() {
 		return tglbtnU.isSelected();
+	}
+	public void setUnderine(boolean b) {
+		tglbtnU.setSelected(b);
 	}
 }
