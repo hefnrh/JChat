@@ -1,4 +1,4 @@
-package core.server;
+package server.core;
 
 public interface CommandExecutor {
 

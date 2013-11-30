@@ -1,4 +1,4 @@
-package core.client;
+package client.core;
 
 
 public interface ClientCallBack {

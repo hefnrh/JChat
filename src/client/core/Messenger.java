@@ -1,4 +1,4 @@
-package core.client;
+package client.core;
 
 import java.io.File;
 

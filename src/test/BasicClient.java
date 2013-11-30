@@ -1,13 +1,12 @@
 package test;
 
-import gui.client.Startup;
-
 import java.io.File;
 
-import core.client.ClientCallBack;
-import core.client.ClientCore;
-import core.client.Messenger;
-import core.server.Server;
+import server.core.Server;
+import client.core.ClientCallBack;
+import client.core.ClientCore;
+import client.core.Messenger;
+import client.gui.Startup;
 
 /**
  * this class is used to test basic chat system functions
