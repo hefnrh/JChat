@@ -31,7 +31,7 @@ public class Startup extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 		setTitle("JChat by guyifan");
-		setBounds(0, 0, 338, 129);
+		setSize(338, 129);
 		getContentPane().setLayout(null);
 		addWindowListener(new WindowAdapter() {
 			@Override
