@@ -18,12 +18,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+import client.core.ClientCore;
+
 public class Startup extends JFrame {
 	private JRadioButton rdbtnRememberAll;
 	private JTextField textField_1;
 	private JTextField textField_2;
 	private JTextField textField;
 	private Properties setting = new Properties();
+	private MainFrame mainFrame;
 
 	public Startup() {
 		setIconImage(new ImageIcon(Startup.class.getResource("face1.jpeg"))
@@ -38,7 +41,6 @@ public class Startup extends JFrame {
 			public void windowClosing(WindowEvent e) {
 				saveSetting();
 			}
-
 			@Override
 			public void windowClosed(WindowEvent e) {
 				saveSetting();
@@ -88,6 +90,7 @@ public class Startup extends JFrame {
 		getContentPane().add(btnLogin);
 
 		readSetting();
+		mainFrame = null;
 	}
 
 	private void btnLoginClicked() {
@@ -102,11 +105,23 @@ public class Startup extends JFrame {
 		int port;
 		try {
 			port = Integer.parseInt(textField_2.getText().trim());
+			if (port > 65535 || port < 0)
+				throw new NumberFormatException();
 		} catch (NumberFormatException e) {
 			JOptionPane.showMessageDialog(this, "invalid port!", "ERROR",
 					JOptionPane.ERROR_MESSAGE);
+			return;
 		}
 		// TODO login
+		mainFrame = new MainFrame(this, name, host, port);
+		mainFrame.setMessenger(new ClientCore(mainFrame));
+		if (!mainFrame.login()) {
+			JOptionPane.showMessageDialog(this, "login failed!", "ERROR",
+					JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		mainFrame.init(setting);
+		setVisible(false);
 	}
 
 	public void saveSetting() {
@@ -118,7 +133,8 @@ public class Startup extends JFrame {
 			setting.setProperty("username", textField.getText().trim());
 			setting.setProperty("host", textField_1.getText().trim());
 			setting.setProperty("port", textField_2.getText().trim());
-			// TODO set main frame setting
+			if (mainFrame != null)
+				mainFrame.getSetting(setting);
 		}
 		try {
 			setting.store(new FileOutputStream("config.ini"), null);
@@ -141,7 +157,6 @@ public class Startup extends JFrame {
 				setBounds(Integer.parseInt(setting.getProperty("startX", "0")),
 						Integer.parseInt(setting.getProperty("startY", "0")),
 						getWidth(), getHeight());
-				// TODO get main frame setting
 			}
 		} catch (Exception e) {
 			return;
