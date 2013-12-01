@@ -15,6 +15,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -66,6 +67,11 @@ public abstract class ChatPanel extends JPanel {
 		});
 		faceBox.setBounds(529, 369, 58, 21);
 		add(faceBox);
+		
+		writePane = new JTextPane();
+		writePane.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "none");
+		writePane.setToolTipText("press enter to send");
+		
 	}
 
 	public final void loadConfigPanel() {
@@ -251,7 +257,7 @@ public abstract class ChatPanel extends JPanel {
 			}
 		}
 		try {
-			doc.insertString(doc.getLength(), "\n\n", s);
+			doc.insertString(doc.getLength(), "\n", s);
 		} catch (BadLocationException e) {
 			JOptionPane.showMessageDialog(this, "error when display text");
 		}

@@ -9,7 +9,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
@@ -36,8 +35,6 @@ public class PublicPanel extends ChatPanel {
 		scrollPane_1.setBounds(10, 407, 579, 71);
 		add(scrollPane_1);
 		
-		writePane = new JTextPane();
-		writePane.setToolTipText("press enter to send");
 		writePane.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
