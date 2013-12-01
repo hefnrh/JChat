@@ -3,9 +3,11 @@ package server.core;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -191,18 +193,31 @@ public class Server implements CommandExecutor {
 			clients.get(fileSender).send(
 					"$file $res $" + fileReceiver + " $false $-1");
 		} else {
-			try {
-				ServerSocket srcServer = new ServerSocket();
-				ServerSocket dstServer = new ServerSocket();
+			ServerSocket srcServer = null, dstServer = null;
+			int srcPort, dstPort;
 				synchronized (portLock) {
-					int srcPort = portGenerate();
-					int dstPort = portGenerate();
-					while (dstPort == srcPort)
-						dstPort = portGenerate();
-					srcServer.setReuseAddress(true);
-					dstServer.setReuseAddress(true);
-					srcServer.bind(new InetSocketAddress(srcPort));
-					dstServer.bind(new InetSocketAddress(dstPort));
+					while (true) {
+						try {
+							srcServer = new ServerSocket();
+							dstServer = new ServerSocket();
+							srcPort = portGenerate();
+							dstPort = portGenerate();
+							while (dstPort == srcPort)
+								dstPort = portGenerate();
+							srcServer.setReuseAddress(true);
+							dstServer.setReuseAddress(true);
+							srcServer.bind(new InetSocketAddress(srcPort));
+							dstServer.bind(new InetSocketAddress(dstPort));
+						} catch (BindException be) {
+							continue;
+						} catch (IOException e) {
+							e.printStackTrace();
+							clients.get(fileSender).send("$error $server error in file transmission");
+							clients.get(fileReceiver).send("$error $server error in file transmission");
+							return;
+						} 
+						break;
+					}
 					clients.get(fileSender).send(
 							"$file $res $" + fileReceiver + " $true $"
 									+ srcPort);
@@ -210,16 +225,18 @@ public class Server implements CommandExecutor {
 							"$file $" + fileSender + " $" + dstPort);
 				}
 				exchangeFile(srcServer, dstServer);
-				srcServer.close();
-				dstServer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+				try {
+					srcServer.close();
+					dstServer.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 		}
 	}
-	
+
 	/**
 	 * random generate a new port to use
+	 * 
 	 * @return new value of portToUse
 	 */
 	private int portGenerate() {
