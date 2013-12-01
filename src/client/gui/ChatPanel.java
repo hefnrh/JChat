@@ -2,6 +2,9 @@ package client.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
@@ -9,6 +12,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
@@ -27,9 +31,10 @@ public abstract class ChatPanel extends JPanel {
 	protected ConfigPanel configPanel;
 	protected JTextPane readPane;
 	protected JTextPane writePane;
+	protected JComboBox<ImageIcon> faceBox;
 	protected ImageIcon[] faces = null;
 
-	private Pattern p = Pattern.compile(";");
+	private Pattern p1 = Pattern.compile(";");
 
 	public ChatPanel(Messenger m, ConfigPanel configPanel, String name) {
 		this.name = name;
@@ -38,13 +43,11 @@ public abstract class ChatPanel extends JPanel {
 		setLayout(null);
 		setSize(774, 521);
 
-		loadConfigPanel();
-
 		JLabel lblFace = new JLabel("face");
 		lblFace.setBounds(492, 372, 38, 15);
 		add(lblFace);
 
-		JComboBox<ImageIcon> faceBox = new JComboBox(loadFaces());
+		faceBox = new JComboBox<>(loadFaces());
 		faceBox.setMaximumRowCount(5);
 		faceBox.setRenderer(new ListCellRenderer<ImageIcon>() {
 			@Override
@@ -54,7 +57,13 @@ public abstract class ChatPanel extends JPanel {
 				return new JLabel(value);
 			}
 		});
-		// TODO add listener
+		faceBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ImageIcon face = (ImageIcon) faceBox.getSelectedItem();
+				writePane.insertIcon(face);
+			}
+		});
 		faceBox.setBounds(529, 369, 58, 21);
 		add(faceBox);
 	}
@@ -75,11 +84,14 @@ public abstract class ChatPanel extends JPanel {
 	private ImageIcon[] loadFaces() {
 		if (faces != null)
 			return faces;
-		// TODO add path
-		String[] path = {};
+		String[] path = new String[12];
+		for (int i = 0; i < path.length; ++i) {
+			path[i] = "face/" + (i + 1) + ".jpg";
+		}
+		path[9] = "face/10.gif";
 		faces = new ImageIcon[path.length];
 		for (int i = 0; i < path.length; ++i) {
-			faces[i] = new ImageIcon(MainFrame.class.getResource(path[i]));
+			faces[i] = new ImageIcon(ChatPanel.class.getResource(path[i]));
 		}
 		return faces;
 	}
@@ -97,10 +109,11 @@ public abstract class ChatPanel extends JPanel {
 		toSend.append(";italic:");
 		toSend.append(configPanel.isItalic());
 		toSend.append(";underline:");
-		toSend.append(configPanel.isUnderine());
+		toSend.append(configPanel.isUnderline());
 		toSend.append("}{");
 		StyledDocument doc = writePane.getStyledDocument();
 		StringBuilder content = new StringBuilder();
+		boolean hasFace = false;
 		// DFS
 		Element root = doc.getRootElements()[0];
 		Stack<Element> stack = new Stack<>();
@@ -126,6 +139,7 @@ public abstract class ChatPanel extends JPanel {
 					toSend.append(',');
 					toSend.append(root.getStartOffset());
 					toSend.append(';');
+					hasFace = true;
 					break;
 				default:
 					break;
@@ -136,13 +150,17 @@ public abstract class ChatPanel extends JPanel {
 			}
 		}
 		toSend.append('}');
-		toSend.append(content);
+		String text = content.toString().trim();
+		if (text.length() < 1 && !hasFace) {
+			return null;
+		}
+		toSend.append(text);
 		return toSend.toString();
 	}
 
 	public void appendMessage(String speaker, String content) {
 		// get font setting
-		String[] params = p.split(content.substring(1, content.indexOf("}")));
+		String[] params = p1.split(content.substring(1, content.indexOf("}")));
 		SimpleAttributeSet s = new SimpleAttributeSet();
 		// add color
 		int pos = params[0].indexOf("=") + 1;
@@ -168,9 +186,86 @@ public abstract class ChatPanel extends JPanel {
 				.substring(params[4].indexOf(":") + 1)));
 		s.addAttribute(StyleConstants.Underline, Boolean.parseBoolean(params[5]
 				.substring(params[5].indexOf(":") + 1)));
-		
 		// get image
 		pos = content.indexOf("{", 1) + 1;
-		params = p.split(content.substring(pos, content.indexOf("}", pos)));
+		params = p1.split(content.substring(pos, content.indexOf("}", pos)));
+		ImageIcon[] face = null;
+		int[] insertPos = null;
+		if (params[0].length() > 0) {
+			face = new ImageIcon[params.length];
+			insertPos = new int[params.length];
+			for (int i = 0; i < params.length; ++i) {
+				pos = params[i].indexOf(",");
+				face[i] = new ImageIcon(MainFrame.class.getResource("face/"
+						+ params[i].substring(0, pos)));
+				// an image[i] has i images before it
+				insertPos[i] = Integer.parseInt(params[i].substring(pos + 1)) - i;
+			}
+		}
+		// get text
+		pos = content.indexOf("}") + 1;
+		pos = content.indexOf("}", pos) + 1;
+		String text = "";
+		if (pos < content.length())
+				text = content.substring(pos);
+		// insert into read pane
+		StyledDocument doc = readPane.getStyledDocument();
+		// append user name
+		try {
+			doc.insertString(doc.getLength(), speaker + ": ", s);
+		} catch (BadLocationException e1) {
+			e1.printStackTrace();
+		}
+		if (face == null) {
+			try {
+				doc.insertString(doc.getLength(), text + "\n", s);
+			} catch (BadLocationException e) {
+				JOptionPane.showMessageDialog(this, "error when display text");
+			}
+			return;
+		}
+		int lastPos = 0;
+		for (int i = 0, j = 0; j < insertPos.length; ) {
+			if (i < insertPos[j]) {
+				++i;
+				continue;
+			}
+			try {
+				if (i > lastPos)
+					doc.insertString(doc.getLength(), text.substring(lastPos, i), s);
+				lastPos = i;
+			} catch (BadLocationException e) {
+				JOptionPane.showMessageDialog(this, "error when display text");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			readPane.setCaretPosition(readPane.getText().length());
+			readPane.insertIcon(face[j]);
+			++j;
+		}
+		if (lastPos < text.length()) {
+			try {
+				doc.insertString(doc.getLength(), text.substring(lastPos), s);
+			} catch (BadLocationException e) {
+				JOptionPane.showMessageDialog(this, "error when display text");
+			}
+		}
+		try {
+			doc.insertString(doc.getLength(), "\n\n", s);
+		} catch (BadLocationException e) {
+			JOptionPane.showMessageDialog(this, "error when display text");
+		}
+	}
+	
+	public void appendSystemMessage(String message) {
+		StringBuilder sb = new StringBuilder("{color:");
+		sb.append(Color.RED.toString());
+		sb.append(";font:");
+		sb.append(Font.DIALOG_INPUT);
+		sb.append(";size:");
+		sb.append(12);
+		sb.append(";bold:true;italic:false;underline:false}{}");
+		sb.append(message);
+		appendMessage("system", sb.toString());
 	}
 }

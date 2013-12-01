@@ -29,7 +29,7 @@ public class ConfigPanel extends JPanel {
 		
 		Color[] colors = { Color.BLACK, Color.BLUE, Color.RED, Color.GREEN, Color.MAGENTA, Color.DARK_GRAY,
 				Color.ORANGE, Color.PINK, Color.YELLOW, Color.WHITE };
-		colorBox = new JComboBox(colors);
+		colorBox = new JComboBox<>(colors);
 		colorBox.setMaximumRowCount(5);
 		colorBox.setRenderer(new ColorRenderer());
 		colorBox.setBounds(46, 7, 42, 21);
@@ -39,9 +39,8 @@ public class ConfigPanel extends JPanel {
 		lblFont.setBounds(98, 10, 36, 15);
 		add(lblFont);
 		
-		String[] fonts = {Font.MONOSPACED, Font.SANS_SERIF, Font.SERIF, "BankGothic Md BT", "Comic Sans MS",
-				"Gabriola", "RussellSquare", "Segoe Script"};
-		fontBox = new JComboBox(fonts);
+		String[] fonts = {Font.MONOSPACED, Font.SANS_SERIF, Font.SERIF, "Comic Sans MS"};
+		fontBox = new JComboBox<>(fonts);
 		fontBox.setMaximumRowCount(5);
 		fontBox.setRenderer(new ListCellRenderer<String>() {
 			@Override
@@ -72,8 +71,8 @@ public class ConfigPanel extends JPanel {
 		lblSize.setBounds(377, 10, 36, 15);
 		add(lblSize);
 		
-		Integer[] sizes = {4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24};
-		sizeBox = new JComboBox(sizes);
+		Integer[] sizes = {14, 16, 18, 20, 22, 24, 26, 28, 30};
+		sizeBox = new JComboBox<>(sizes);
 		sizeBox.setMaximumRowCount(5);
 		sizeBox.setBounds(410, 7, 52, 21);
 		add(sizeBox);
@@ -114,10 +113,10 @@ public class ConfigPanel extends JPanel {
 		tglbtnI.setSelected(b);
 	}
 	
-	public boolean isUnderine() {
+	public boolean isUnderline() {
 		return tglbtnU.isSelected();
 	}
-	public void setUnderine(boolean b) {
+	public void setUnderline(boolean b) {
 		tglbtnU.setSelected(b);
 	}
 }

@@ -2,10 +2,14 @@ package client.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
@@ -17,14 +21,15 @@ public class PublicPanel extends ChatPanel {
 
 	public PublicPanel(Messenger m, ConfigPanel configPanel, String name) {
 		// TODO don't forget to change back
-		super(m, new ConfigPanel(), name);
-//		super(m, configPanel, name);
+//		super(m, new ConfigPanel(), name);
+		super(m, configPanel, name);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(10, 10, 579, 342);
 		add(scrollPane);
 		
 		readPane = new JTextPane();
+		readPane.setEditable(false);
 		scrollPane.setViewportView(readPane);
 		
 		JScrollPane scrollPane_1 = new JScrollPane();
@@ -32,6 +37,16 @@ public class PublicPanel extends ChatPanel {
 		add(scrollPane_1);
 		
 		writePane = new JTextPane();
+		writePane.setToolTipText("press enter to send");
+		writePane.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					sendMessage();
+					writePane.setText("");
+				}
+			}
+		});
 		scrollPane_1.setViewportView(writePane);
 		
 		JScrollPane scrollPane_2 = new JScrollPane();
@@ -39,7 +54,7 @@ public class PublicPanel extends ChatPanel {
 		add(scrollPane_2);
 		
 		onlineModel = new DefaultListModel<>();
-		list = new JList();
+		list = new JList<>();
 		list.setModel(onlineModel);
 		scrollPane_2.setViewportView(list);
 		
@@ -49,6 +64,7 @@ public class PublicPanel extends ChatPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				sendMessage();
+				writePane.setText("");
 			}
 		});
 		add(btnSend);
@@ -60,11 +76,40 @@ public class PublicPanel extends ChatPanel {
 	
 	
 	private void sendMessage() {
-		m.sendPublicMessage(getWriteText());
+		String toSend = getWriteText();
+		if (toSend == null) {
+			JOptionPane.showMessageDialog(this, "can't send null message");
+			return;
+		}
+		m.sendPublicMessage(toSend);
 	}
 	
 	public void addUser(String[] user) {
-		// TODO
+		// TODO sort
+		StringBuilder sb = new StringBuilder();
+		for (String name : user) {
+			onlineModel.addElement(name);
+			sb.append(name);
+			sb.append(", ");
+		}
+		sb.deleteCharAt(sb.length() - 2);
+		sb.append("enter.");
 	}
 	
+	public void removeUser(String[] user) {
+		StringBuilder sb = new StringBuilder();
+		for (String name : user) {
+			onlineModel.removeElement(name);
+			sb.append(name);
+			sb.append(", ");
+		}
+		sb.deleteCharAt(sb.length() - 2);
+		sb.append("leave.");
+	}
+	
+	@Override
+	public void appendMessage(String speaker, String message) {
+		super.appendMessage(speaker, message);
+		readPane.setCaretPosition(readPane.getText().length());
+	}
 }

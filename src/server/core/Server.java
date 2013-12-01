@@ -7,7 +7,6 @@ import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -87,7 +86,7 @@ public class Server implements CommandExecutor {
 	@Override
 	public void exec(String command, String username) {
 		if (command.length() < 5) {
-			System.out.println("invalid command");
+			System.out.println("invalid command: \"" + command + "\"");
 			return;
 		}
 		if (command.startsWith("$logout")) {

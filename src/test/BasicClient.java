@@ -23,10 +23,17 @@ public class BasicClient implements ClientCallBack {
 		if (!debug) {
 			// TODO
 		} else {
-			testStartup();
+			testClientUI();
 		}
 	}
-
+	
+	public static void testClientUI() {
+		Server server = new Server(12700);
+		server.start();
+		Startup start = new Startup();
+		start.setVisible(true);
+		server.waitFor();
+	}
 	public static void testCoreLogic() {
 		Server server = new Server(12700);
 		server.start();

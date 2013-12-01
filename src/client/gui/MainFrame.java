@@ -1,5 +1,7 @@
 package client.gui;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -10,13 +12,13 @@ import java.util.Properties;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
 import client.core.ClientCallBack;
 import client.core.Messenger;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
 
 public class MainFrame extends JFrame implements ClientCallBack {
 	private Startup parent;
@@ -60,8 +62,10 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			public void mouseClicked(MouseEvent e) {
 				int index = tabbedPane.getSelectedIndex();
 				ChatPanel cp = (ChatPanel) tabbedPane.getTabComponentAt(index);
-				cp.loadConfigPanel();
-				tabbedPane.setTitleAt(index, cp.getName());
+				if (cp != null) {
+					cp.loadConfigPanel();
+					tabbedPane.setTitleAt(index, cp.getName());
+				}
 			}
 		});
 		tabbedPane.setBounds(10, 10, 774, 552);
@@ -71,13 +75,13 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		configPanel = new ConfigPanel();
 		publicPanel = new PublicPanel(null, configPanel, "public");
 		tabbedPane.addTab("public", publicPanel);
-		
+
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
-		
+
 		JMenu mnOption = new JMenu("option");
 		menuBar.add(mnOption);
-		
+
 		JMenu mnHelp = new JMenu("help");
 		menuBar.add(mnHelp);
 	}
@@ -95,28 +99,43 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	}
 
 	public void init(Properties p) {
-		// TODO read setting
+		// get color
+		String value = p.getProperty("color", Color.BLACK.toString()).substring(14);
+		int pos = value.indexOf("=") + 1;
+		int r = Integer.parseInt(value.substring(pos, value.indexOf(",", pos)));
+		pos = value.indexOf("=", pos) + 1;
+		int g = Integer.parseInt(value.substring(pos, value.indexOf(",", pos)));
+		pos = value.indexOf("=", pos) + 1;
+		int b = Integer.parseInt(value.substring(pos, value.indexOf("]")));
+		Color c = new Color(r, g, b);
+		configPanel.setColor(c);
+		// get font
+		configPanel.setFontName(p.getProperty("font", Font.SANS_SERIF));
+		configPanel.setFontSize(Integer.parseInt(p.getProperty("size", "12")));
+		configPanel.setBold(Boolean.parseBoolean(p.getProperty("bold", "false")));
+		configPanel.setItalic(Boolean.parseBoolean(p.getProperty("italic", "false")));
+		configPanel.setUnderline(Boolean.parseBoolean(p.getProperty("underline", "false")));
+		
+		publicPanel.loadConfigPanel();
 		setVisible(true);
 	}
 
 	@Override
 	public void online(String[] names) {
-		// TODO Auto-generated method stub
-
+		publicPanel.addUser(names);
 	}
 
 	@Override
 	public void offline(String[] names) {
-		// TODO Auto-generated method stub
-
+		publicPanel.removeUser(names);
 	}
 
 	@Override
 	public void talkPublic(String from, String content) {
-		// TODO Auto-generated method stub
 		publicPanel.appendMessage(from, content);
 		if (tabbedPane.getSelectedComponent() != publicPanel)
-			tabbedPane.setTitleAt(tabbedPane.indexOfComponent(publicPanel), "NEW MESSAGE!");
+			tabbedPane.setTitleAt(tabbedPane.indexOfComponent(publicPanel),
+					"NEW MESSAGE!");
 	}
 
 	@Override
@@ -162,7 +181,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		p.setProperty("size", configPanel.getSelectedFontSize() + "");
 		p.setProperty("bold", configPanel.isBold() + "");
 		p.setProperty("italic", configPanel.isItalic() + "");
-		p.setProperty("underline", configPanel.isUnderine() + "");
+		p.setProperty("underline", configPanel.isUnderline() + "");
 		return p;
 	}
 }
