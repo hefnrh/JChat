@@ -15,6 +15,8 @@ import javax.swing.JTabbedPane;
 
 import client.core.ClientCallBack;
 import client.core.Messenger;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
 
 public class MainFrame extends JFrame implements ClientCallBack {
 	private Startup parent;
@@ -50,7 +52,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		});
 		setResizable(false);
 		getContentPane().setLayout(null);
-		setSize(800, 600);
+		setSize(800, 620);
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.addMouseListener(new MouseAdapter() {
@@ -62,13 +64,22 @@ public class MainFrame extends JFrame implements ClientCallBack {
 				tabbedPane.setTitleAt(index, cp.getName());
 			}
 		});
-		tabbedPane.setBounds(10, 10, 763, 541);
+		tabbedPane.setBounds(10, 10, 774, 552);
 		getContentPane().add(tabbedPane);
 
 		privatePanel = new HashMap<>();
 		configPanel = new ConfigPanel();
 		publicPanel = new PublicPanel(null, configPanel, "public");
 		tabbedPane.addTab("public", publicPanel);
+		
+		JMenuBar menuBar = new JMenuBar();
+		setJMenuBar(menuBar);
+		
+		JMenu mnOption = new JMenu("option");
+		menuBar.add(mnOption);
+		
+		JMenu mnHelp = new JMenu("help");
+		menuBar.add(mnHelp);
 	}
 
 	public void setMessenger(Messenger m) {
@@ -103,7 +114,9 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	@Override
 	public void talkPublic(String from, String content) {
 		// TODO Auto-generated method stub
-
+		publicPanel.appendMessage(from, content);
+		if (tabbedPane.getSelectedComponent() != publicPanel)
+			tabbedPane.setTitleAt(tabbedPane.indexOfComponent(publicPanel), "NEW MESSAGE!");
 	}
 
 	@Override

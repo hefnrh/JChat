@@ -14,8 +14,7 @@ import client.core.Messenger;
 public class PublicPanel extends ChatPanel {
 	private JList<String> list;
 	private DefaultListModel<String> onlineModel;
-	private JTextPane textPane;
-	private JTextPane textPane_1;
+
 	public PublicPanel(Messenger m, ConfigPanel configPanel, String name) {
 		// TODO don't forget to change back
 		super(m, new ConfigPanel(), name);
@@ -25,18 +24,18 @@ public class PublicPanel extends ChatPanel {
 		scrollPane.setBounds(10, 10, 579, 342);
 		add(scrollPane);
 		
-		textPane = new JTextPane();
-		scrollPane.setViewportView(textPane);
+		readPane = new JTextPane();
+		scrollPane.setViewportView(readPane);
 		
 		JScrollPane scrollPane_1 = new JScrollPane();
 		scrollPane_1.setBounds(10, 407, 579, 71);
 		add(scrollPane_1);
 		
-		textPane_1 = new JTextPane();
-		scrollPane_1.setViewportView(textPane_1);
+		writePane = new JTextPane();
+		scrollPane_1.setViewportView(writePane);
 		
 		JScrollPane scrollPane_2 = new JScrollPane();
-		scrollPane_2.setBounds(598, 10, 135, 511);
+		scrollPane_2.setBounds(598, 10, 166, 501);
 		add(scrollPane_2);
 		
 		onlineModel = new DefaultListModel<>();
@@ -61,11 +60,11 @@ public class PublicPanel extends ChatPanel {
 	
 	
 	private void sendMessage() {
+		m.sendPublicMessage(getWriteText());
+	}
+	
+	public void addUser(String[] user) {
 		// TODO
 	}
 	
-	@Override
-	public void appendMessage(String speaker, String content) {
-		// TODO
-	}
 }
