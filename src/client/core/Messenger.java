@@ -70,4 +70,9 @@ public interface Messenger {
 	 * @return true if the file has been downloaded correctly
 	 */
 	public boolean receiveFile(File file, int port);
+	
+	/**
+	 * stop the messenger from working
+	 */
+	public void stop();
 }

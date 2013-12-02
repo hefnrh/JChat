@@ -69,6 +69,7 @@ public class ClientListener extends Thread {
 				}
 				ce.exec(msg, name);
 			}
+			ce.remove(name);
 		} catch (IOException e) {
 			ce.remove(name);
 		}

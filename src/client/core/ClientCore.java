@@ -182,6 +182,15 @@ public class ClientCore implements Messenger {
 		return true;
 		
 	}
+	
+	@Override
+	public void stop() {
+		try {
+			sock.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * send content to server

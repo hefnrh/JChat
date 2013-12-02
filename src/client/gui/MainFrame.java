@@ -8,12 +8,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -37,7 +39,9 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	private String name;
 	private String host;
 	private int port;
-
+	private File fileToReceive = null;
+	private String filename;
+	
 	public MainFrame(Startup parent, String username, String host, int port) {
 		this.parent = parent;
 		name = username;
@@ -47,16 +51,20 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		setIconImage(new ImageIcon(MainFrame.class.getResource("mainIcon.jpg"))
 				.getImage());
 		setTitle("JChat - " + host + ":" + port + " - " + name);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				MainFrame.this.parent.saveSetting();
+				m.logout();
+				MainFrame.this.parent.setVisible(true);
 			}
 
 			@Override
 			public void windowClosing(WindowEvent e) {
 				MainFrame.this.parent.saveSetting();
+				m.logout();
+				MainFrame.this.parent.setVisible(true);
 			}
 		});
 		setResizable(false);
@@ -107,7 +115,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			}
 		});
 		mnHelp.add(mntmAbout);
-		
+
 		tabPop = new JPopupMenu();
 		JMenuItem closeTab = new JMenuItem("close");
 		closeTab.addActionListener(new ActionListener() {
@@ -115,7 +123,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			public void actionPerformed(ActionEvent e) {
 				ChatPanel cp = (ChatPanel) tabbedPane.getSelectedComponent();
 				if (cp == publicPanel) {
-					JOptionPane.showMessageDialog(MainFrame.this, "can't close public channel");
+					JOptionPane.showMessageDialog(MainFrame.this,
+							"can't close public channel");
 					return;
 				}
 				int index = tabbedPane.getSelectedIndex() - 1;
@@ -207,20 +216,50 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void fileRequest(String from, String filename, long filesize) {
-		// TODO Auto-generated method stub
-
+		String message;
+		if (fileToReceive != null) {
+			message = from + " wants to send you: " + filename + "("
+					+ filesize + " KB), but you are receiving another file.";
+			JOptionPane.showMessageDialog(this, message);
+			m.fileRequestResponse(from, false);
+			return;
+		}
+		message = from + " wants to send you: " + filename + "("
+				+ filesize + " KB)";
+		this.filename = filename;
+		int res = JOptionPane.showConfirmDialog(this, message, "receive file?",
+				JOptionPane.YES_NO_OPTION);
+		if (res == JOptionPane.YES_OPTION)
+			m.fileRequestResponse(from, true);
+		else
+			m.fileRequestResponse(from, false);
 	}
 
 	@Override
 	public void fileResponse(String from, boolean accepted, int port) {
-		// TODO Auto-generated method stub
-
+		if (!accepted) {
+			privatePanel.get(from).fileSendOver();
+			JOptionPane.showMessageDialog(this, from + " rejected your request.");
+			return;
+		}
+		m.sendFile(privatePanel.get(from).getFile(), port);
+		privatePanel.get(from).fileSendOver();
+		JOptionPane.showMessageDialog(this, "transmission over");
 	}
 
 	@Override
 	public void fileReceive(String sender, int port) {
-		// TODO Auto-generated method stub
-
+		JFileChooser jfc = new JFileChooser();
+		jfc.setSelectedFile(new File(filename));
+		int res = jfc.showSaveDialog(this);
+		while (res != JFileChooser.APPROVE_OPTION) {
+			JOptionPane.showMessageDialog(this, "you must choose a place to save file");
+			res = jfc.showSaveDialog(this);
+		}
+		fileToReceive = jfc.getSelectedFile();
+		m.receiveFile(fileToReceive, port);
+		JOptionPane.showMessageDialog(this, "transmission over");
+		fileToReceive = null;
 	}
 
 	@Override
@@ -243,14 +282,14 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		p.setProperty("mainY", getY() + "");
 		return p;
 	}
-	
+
 	public void addPrivatePanel(PrivatePanel pp) {
 		if (privatePanel.containsKey(pp.getName()))
 			return;
 		privatePanel.put(pp.getName(), pp);
 		tabbedPane.addTab(pp.getName(), pp);
 	}
-	
+
 	@Override
 	public String getName() {
 		return name;

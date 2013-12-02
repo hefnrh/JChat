@@ -85,7 +85,7 @@ public class Server implements CommandExecutor {
 
 	@Override
 	public void exec(String command, String username) {
-		if (command.length() < 5) {
+		if (command.length() < 4) {
 			System.out.println("invalid command: \"" + command + "\"");
 			return;
 		}
@@ -126,8 +126,9 @@ public class Server implements CommandExecutor {
 	public void remove(String username) {
 		synchronized (listLock) {
 			ClientListener cl = clients.remove(username);
-			if (cl != null)
-				cl.close();
+			if (cl == null)
+				return;
+			cl.close();
 			for (ClientListener client : clients.values())
 				client.send("$offline $" + username);
 		}
