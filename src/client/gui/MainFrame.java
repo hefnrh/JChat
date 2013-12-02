@@ -26,6 +26,7 @@ import javax.swing.JTabbedPane;
 
 import client.core.ClientCallBack;
 import client.core.Messenger;
+import client.gui.multimedia.SoundPlayer;
 
 public class MainFrame extends JFrame implements ClientCallBack {
 	private Startup parent;
@@ -41,7 +42,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	private int port;
 	private File fileToReceive = null;
 	private String filename;
-	
+
 	public MainFrame(Startup parent, String username, String host, int port) {
 		this.parent = parent;
 		name = username;
@@ -175,12 +176,17 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		int x = Integer.parseInt(p.getProperty("mainX", "0"));
 		int y = Integer.parseInt(p.getProperty("mainY", "0"));
 		setLocation(x, y);
+		// get mute setting
+		chckbxmntmMute.setSelected(Boolean.parseBoolean(p.getProperty("mute",
+				"false")));
 
 		publicPanel.loadConfigPanel();
 	}
 
 	@Override
 	public void online(String[] names) {
+		if (!chckbxmntmMute.isSelected())
+			playNotify();
 		if (!isVisible()) {
 			setVisible(true);
 			parent.setVisible(false);
@@ -190,6 +196,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void offline(String[] names) {
+		if (!chckbxmntmMute.isSelected())
+			playNotify();
 		publicPanel.removeUser(names);
 	}
 
@@ -203,6 +211,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void talkPrivate(String from, String content) {
+		if (!chckbxmntmMute.isSelected())
+			playNotify();
 		PrivatePanel pp;
 		if (!privatePanel.containsKey(from)) {
 			pp = new PrivatePanel(this, m, configPanel, from);
@@ -216,16 +226,18 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void fileRequest(String from, String filename, long filesize) {
+		if (!chckbxmntmMute.isSelected())
+			playNotify();
 		String message;
 		if (fileToReceive != null) {
-			message = from + " wants to send you: " + filename + "("
-					+ filesize + " KB), but you are receiving another file.";
+			message = from + " wants to send you: " + filename + "(" + filesize
+					+ " KB), but you are receiving another file.";
 			JOptionPane.showMessageDialog(this, message);
 			m.fileRequestResponse(from, false);
 			return;
 		}
-		message = from + " wants to send you: " + filename + "("
-				+ filesize + " KB)";
+		message = from + " wants to send you: " + filename + "(" + filesize
+				+ " KB)";
 		this.filename = filename;
 		int res = JOptionPane.showConfirmDialog(this, message, "receive file?",
 				JOptionPane.YES_NO_OPTION);
@@ -237,9 +249,12 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void fileResponse(String from, boolean accepted, int port) {
+		if (!chckbxmntmMute.isSelected())
+			playNotify();
 		if (!accepted) {
 			privatePanel.get(from).fileSendOver();
-			JOptionPane.showMessageDialog(this, from + " rejected your request.");
+			JOptionPane.showMessageDialog(this, from
+					+ " rejected your request.");
 			return;
 		}
 		m.sendFile(privatePanel.get(from).getFile(), port);
@@ -253,7 +268,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		jfc.setSelectedFile(new File(filename));
 		int res = jfc.showSaveDialog(this);
 		while (res != JFileChooser.APPROVE_OPTION) {
-			JOptionPane.showMessageDialog(this, "you must choose a place to save file");
+			JOptionPane.showMessageDialog(this,
+					"you must choose a place to save file");
 			res = jfc.showSaveDialog(this);
 		}
 		fileToReceive = jfc.getSelectedFile();
@@ -264,6 +280,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void error(String message) {
+		if (!chckbxmntmMute.isSelected())
+			playNotify();
 		JOptionPane.showMessageDialog(parent, message, "ERROR",
 				JOptionPane.ERROR_MESSAGE);
 		if (!isVisible()) {
@@ -280,6 +298,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		p.setProperty("underline", configPanel.isUnderline() + "");
 		p.setProperty("mainX", getX() + "");
 		p.setProperty("mainY", getY() + "");
+		p.setProperty("mute", chckbxmntmMute.isSelected() + "");
 		return p;
 	}
 
@@ -293,5 +312,14 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	private void playNotify() {
+		try {
+			new Thread(new SoundPlayer(
+					MainFrame.class.getResource("notify.wav"))).start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

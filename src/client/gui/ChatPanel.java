@@ -71,16 +71,16 @@ public abstract class ChatPanel extends JPanel {
 		});
 		faceBox.setBounds(529, 369, 58, 21);
 		add(faceBox);
-		
+
 		writePane = new JTextPane();
 		writePane.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "none");
 		writePane.setToolTipText("press enter to send");
-		
+
 		readPane = new JTextPane();
 		readPane.setEditable(false);
-		
+
 		btnSend = new JButton("send");
-		
+
 		btnClear = new JButton("clear");
 		btnClear.addActionListener(new ActionListener() {
 			@Override
@@ -88,7 +88,7 @@ public abstract class ChatPanel extends JPanel {
 				readPane.setText("");
 			}
 		});
-		
+
 	}
 
 	public final void loadConfigPanel() {
@@ -224,7 +224,8 @@ public abstract class ChatPanel extends JPanel {
 				face[i] = new ImageIcon(MainFrame.class.getResource("face/"
 						+ params[i].substring(0, pos)));
 				// an image[i] has i images before it
-				insertPos[i] = Integer.parseInt(params[i].substring(pos + 1)) - i;
+				insertPos[i] = Integer.parseInt(params[i].substring(pos + 1))
+						- i;
 			}
 		}
 		// get text
@@ -232,58 +233,65 @@ public abstract class ChatPanel extends JPanel {
 		pos = content.indexOf("}", pos) + 1;
 		String text = "";
 		if (pos < content.length())
-				text = content.substring(pos);
+			text = content.substring(pos);
 		// insert into read pane
 		StyledDocument doc = readPane.getStyledDocument();
-		// append user name
-		try {
-			doc.insertString(doc.getLength(), speaker + ": ", s);
-		} catch (BadLocationException e1) {
-			e1.printStackTrace();
-		}
-		if (face == null) {
+		synchronized (this) {
+			// append user name
 			try {
-				doc.insertString(doc.getLength(), text + "\n\n", s);
+				doc.insertString(doc.getLength(), speaker + ": ", s);
+			} catch (BadLocationException e1) {
+				e1.printStackTrace();
+			}
+			if (face == null) {
+				try {
+					doc.insertString(doc.getLength(), text + "\n\n", s);
+				} catch (BadLocationException e) {
+					JOptionPane.showMessageDialog(this,
+							"error when display text");
+				}
+				readPane.setCaretPosition(readPane.getText().length());
+				return;
+			}
+			int lastPos = 0;
+			for (int i = 0, j = 0; j < insertPos.length;) {
+				if (i < insertPos[j]) {
+					++i;
+					continue;
+				}
+				try {
+					if (i > lastPos)
+						doc.insertString(doc.getLength(),
+								text.substring(lastPos, i), s);
+					lastPos = i;
+				} catch (BadLocationException e) {
+					JOptionPane.showMessageDialog(this,
+							"error when display text");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				readPane.setCaretPosition(readPane.getText().length());
+				readPane.insertIcon(face[j]);
+				++j;
+			}
+			if (lastPos < text.length()) {
+				try {
+					doc.insertString(doc.getLength(), text.substring(lastPos),
+							s);
+				} catch (BadLocationException e) {
+					JOptionPane.showMessageDialog(this,
+							"error when display text");
+				}
+			}
+			try {
+				doc.insertString(doc.getLength(), "\n\n", s);
 			} catch (BadLocationException e) {
 				JOptionPane.showMessageDialog(this, "error when display text");
 			}
 			readPane.setCaretPosition(readPane.getText().length());
-			return;
 		}
-		int lastPos = 0;
-		for (int i = 0, j = 0; j < insertPos.length; ) {
-			if (i < insertPos[j]) {
-				++i;
-				continue;
-			}
-			try {
-				if (i > lastPos)
-					doc.insertString(doc.getLength(), text.substring(lastPos, i), s);
-				lastPos = i;
-			} catch (BadLocationException e) {
-				JOptionPane.showMessageDialog(this, "error when display text");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			readPane.setCaretPosition(readPane.getText().length());
-			readPane.insertIcon(face[j]);
-			++j;
-		}
-		if (lastPos < text.length()) {
-			try {
-				doc.insertString(doc.getLength(), text.substring(lastPos), s);
-			} catch (BadLocationException e) {
-				JOptionPane.showMessageDialog(this, "error when display text");
-			}
-		}
-		try {
-			doc.insertString(doc.getLength(), "\n\n", s);
-		} catch (BadLocationException e) {
-			JOptionPane.showMessageDialog(this, "error when display text");
-		}
-		readPane.setCaretPosition(readPane.getText().length());
 	}
-	
+
 	public void appendSystemMessage(String message) {
 		StringBuilder sb = new StringBuilder("{color:");
 		sb.append(Color.RED.toString());
@@ -295,6 +303,6 @@ public abstract class ChatPanel extends JPanel {
 		sb.append(message);
 		appendMessage("system", sb.toString());
 	}
-	
+
 	protected abstract void sendMessage();
 }
