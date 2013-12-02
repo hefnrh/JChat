@@ -122,7 +122,6 @@ public class Startup extends JFrame {
 			return;
 		}
 		mainFrame.init(setting);
-		setVisible(false);
 	}
 
 	public void saveSetting() {

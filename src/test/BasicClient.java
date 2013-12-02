@@ -17,11 +17,32 @@ import client.gui.Startup;
 public class BasicClient implements ClientCallBack {
 
 	// for debug
-	private static boolean debug = true;
+	private static boolean debug = false;
 
+	public static void usage() {
+		System.out.println("usage: <client|server> <port>");
+	}
+	
 	public static void main(String[] args) {
 		if (!debug) {
-			// TODO
+			if (args.length < 1 || (!args[0].startsWith("server") && !args[0].equals("-h")))
+				new Startup().setVisible(true);
+			else if (args[0].equals("-h")) {
+				usage();
+			} else {
+				int port = 12700;
+				if (args.length >= 2) {
+					try {
+						port = Integer.parseInt(args[1]);
+					} catch (NumberFormatException e) {
+						System.out.println("invalid port. set to default(12700).");
+					}
+				}
+				Server server = new Server(port);
+				server.start();
+				System.out.println("server start on port " + port);
+				server.waitFor();
+			}
 		} else {
 			testClientUI();
 		}

@@ -56,7 +56,10 @@ public class ClientListener extends Thread {
 			String msg = br.readLine();
 			String name = msg.substring(msg.indexOf(" $") + 2);
 			this.name = name;
-			ce.add(name, this);
+			if (!ce.add(name, this)) {
+				send("$error $username already in use!");
+				return;
+			}
 			while (sock != null && sock.isConnected()
 					&& !sock.isInputShutdown()) {
 				msg = br.readLine();

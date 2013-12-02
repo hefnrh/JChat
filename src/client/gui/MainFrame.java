@@ -2,6 +2,8 @@ package client.gui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -11,10 +13,13 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 
 import client.core.ClientCallBack;
@@ -25,6 +30,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	private JTabbedPane tabbedPane;
 	private PublicPanel publicPanel;
 	private ConfigPanel configPanel;
+	private JCheckBoxMenuItem chckbxmntmMute;
+	private JPopupMenu tabPop;
 	private Map<String, PrivatePanel> privatePanel;
 	private Messenger m;
 	private String name;
@@ -39,7 +46,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 		setIconImage(new ImageIcon(MainFrame.class.getResource("mainIcon.jpg"))
 				.getImage());
-		setTitle("JChat - " + host + ":" + port);
+		setTitle("JChat - " + host + ":" + port + " - " + name);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -60,12 +67,14 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		tabbedPane.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				ChatPanel cp = (ChatPanel) tabbedPane.getSelectedComponent();
 				int index = tabbedPane.getSelectedIndex();
-				ChatPanel cp = (ChatPanel) tabbedPane.getTabComponentAt(index);
 				if (cp != null) {
 					cp.loadConfigPanel();
 					tabbedPane.setTitleAt(index, cp.getName());
 				}
+				if (e.getButton() == MouseEvent.BUTTON3)
+					tabPop.show(tabbedPane, e.getX(), e.getY());
 			}
 		});
 		tabbedPane.setBounds(10, 10, 774, 552);
@@ -73,7 +82,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 		privatePanel = new HashMap<>();
 		configPanel = new ConfigPanel();
-		publicPanel = new PublicPanel(null, configPanel, "public");
+		publicPanel = new PublicPanel(this, null, configPanel, "public");
 		tabbedPane.addTab("public", publicPanel);
 
 		JMenuBar menuBar = new JMenuBar();
@@ -82,8 +91,42 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		JMenu mnOption = new JMenu("option");
 		menuBar.add(mnOption);
 
+		chckbxmntmMute = new JCheckBoxMenuItem("mute");
+		mnOption.add(chckbxmntmMute);
+
 		JMenu mnHelp = new JMenu("help");
 		menuBar.add(mnHelp);
+
+		JMenuItem mntmAbout = new JMenuItem("about");
+		mntmAbout.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(MainFrame.this,
+						"author: GuYifan\nhttps://github.com/hefnrh", "ABOUT",
+						JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+		mnHelp.add(mntmAbout);
+		
+		tabPop = new JPopupMenu();
+		JMenuItem closeTab = new JMenuItem("close");
+		closeTab.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ChatPanel cp = (ChatPanel) tabbedPane.getSelectedComponent();
+				if (cp == publicPanel) {
+					JOptionPane.showMessageDialog(MainFrame.this, "can't close public channel");
+					return;
+				}
+				int index = tabbedPane.getSelectedIndex() - 1;
+				ChatPanel last = (ChatPanel) tabbedPane.getComponentAt(index);
+				last.loadConfigPanel();
+				tabbedPane.setSelectedComponent(last);
+				tabbedPane.remove(cp);
+				privatePanel.remove(cp.getName());
+			}
+		});
+		tabPop.add(closeTab);
 	}
 
 	public void setMessenger(Messenger m) {
@@ -100,7 +143,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	public void init(Properties p) {
 		// get color
-		String value = p.getProperty("color", Color.BLACK.toString()).substring(14);
+		String value = p.getProperty("color", Color.BLACK.toString())
+				.substring(14);
 		int pos = value.indexOf("=") + 1;
 		int r = Integer.parseInt(value.substring(pos, value.indexOf(",", pos)));
 		pos = value.indexOf("=", pos) + 1;
@@ -112,16 +156,26 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		// get font
 		configPanel.setFontName(p.getProperty("font", Font.SANS_SERIF));
 		configPanel.setFontSize(Integer.parseInt(p.getProperty("size", "12")));
-		configPanel.setBold(Boolean.parseBoolean(p.getProperty("bold", "false")));
-		configPanel.setItalic(Boolean.parseBoolean(p.getProperty("italic", "false")));
-		configPanel.setUnderline(Boolean.parseBoolean(p.getProperty("underline", "false")));
-		
+		configPanel
+				.setBold(Boolean.parseBoolean(p.getProperty("bold", "false")));
+		configPanel.setItalic(Boolean.parseBoolean(p.getProperty("italic",
+				"false")));
+		configPanel.setUnderline(Boolean.parseBoolean(p.getProperty(
+				"underline", "false")));
+		// get main frame setting
+		int x = Integer.parseInt(p.getProperty("mainX", "0"));
+		int y = Integer.parseInt(p.getProperty("mainY", "0"));
+		setLocation(x, y);
+
 		publicPanel.loadConfigPanel();
-		setVisible(true);
 	}
 
 	@Override
 	public void online(String[] names) {
+		if (!isVisible()) {
+			setVisible(true);
+			parent.setVisible(false);
+		}
 		publicPanel.addUser(names);
 	}
 
@@ -142,8 +196,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	public void talkPrivate(String from, String content) {
 		PrivatePanel pp;
 		if (!privatePanel.containsKey(from)) {
-			pp = new PrivatePanel(m, configPanel, from);
-			tabbedPane.addTab(from, pp);
+			pp = new PrivatePanel(this, m, configPanel, from);
+			addPrivatePanel(pp);
 		} else
 			pp = privatePanel.get(from);
 		pp.appendMessage(from, content);
@@ -171,8 +225,11 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void error(String message) {
-		JOptionPane.showMessageDialog(this, message, "ERROR",
+		JOptionPane.showMessageDialog(parent, message, "ERROR",
 				JOptionPane.ERROR_MESSAGE);
+		if (!isVisible()) {
+			this.dispose();
+		}
 	}
 
 	public Properties getSetting(Properties p) {
@@ -182,6 +239,20 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		p.setProperty("bold", configPanel.isBold() + "");
 		p.setProperty("italic", configPanel.isItalic() + "");
 		p.setProperty("underline", configPanel.isUnderline() + "");
+		p.setProperty("mainX", getX() + "");
+		p.setProperty("mainY", getY() + "");
 		return p;
+	}
+	
+	public void addPrivatePanel(PrivatePanel pp) {
+		if (privatePanel.containsKey(pp.getName()))
+			return;
+		privatePanel.put(pp.getName(), pp);
+		tabbedPane.addTab(pp.getName(), pp);
+	}
+	
+	@Override
+	public String getName() {
+		return name;
 	}
 }

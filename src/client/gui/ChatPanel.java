@@ -9,6 +9,7 @@ import java.util.Stack;
 import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -33,6 +34,8 @@ public abstract class ChatPanel extends JPanel {
 	protected JTextPane readPane;
 	protected JTextPane writePane;
 	protected JComboBox<ImageIcon> faceBox;
+	protected JButton btnClear;
+	protected JButton btnSend;
 	protected ImageIcon[] faces = null;
 
 	private Pattern p1 = Pattern.compile(";");
@@ -63,6 +66,7 @@ public abstract class ChatPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				ImageIcon face = (ImageIcon) faceBox.getSelectedItem();
 				writePane.insertIcon(face);
+				writePane.grabFocus();
 			}
 		});
 		faceBox.setBounds(529, 369, 58, 21);
@@ -72,13 +76,28 @@ public abstract class ChatPanel extends JPanel {
 		writePane.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "none");
 		writePane.setToolTipText("press enter to send");
 		
+		readPane = new JTextPane();
+		readPane.setEditable(false);
+		
+		btnSend = new JButton("send");
+		
+		btnClear = new JButton("clear");
+		btnClear.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				readPane.setText("");
+			}
+		});
+		
 	}
 
 	public final void loadConfigPanel() {
 		add(configPanel);
 		configPanel.setLocation(10, 362);
+		repaint();
 	}
 
+	@Override
 	public final String getName() {
 		return name;
 	}
@@ -224,10 +243,11 @@ public abstract class ChatPanel extends JPanel {
 		}
 		if (face == null) {
 			try {
-				doc.insertString(doc.getLength(), text + "\n", s);
+				doc.insertString(doc.getLength(), text + "\n\n", s);
 			} catch (BadLocationException e) {
 				JOptionPane.showMessageDialog(this, "error when display text");
 			}
+			readPane.setCaretPosition(readPane.getText().length());
 			return;
 		}
 		int lastPos = 0;
@@ -257,10 +277,11 @@ public abstract class ChatPanel extends JPanel {
 			}
 		}
 		try {
-			doc.insertString(doc.getLength(), "\n", s);
+			doc.insertString(doc.getLength(), "\n\n", s);
 		} catch (BadLocationException e) {
 			JOptionPane.showMessageDialog(this, "error when display text");
 		}
+		readPane.setCaretPosition(readPane.getText().length());
 	}
 	
 	public void appendSystemMessage(String message) {
@@ -274,4 +295,6 @@ public abstract class ChatPanel extends JPanel {
 		sb.append(message);
 		appendMessage("system", sb.toString());
 	}
+	
+	protected abstract void sendMessage();
 }
