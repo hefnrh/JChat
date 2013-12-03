@@ -58,4 +58,17 @@ public interface ClientCallBack {
 	 */
 	public void error(String message);
 	
+	/**
+	 * used to notify the progress of the transmission
+	 * @param complete bytes that have been transmitted
+	 * @param all size of the file
+	 */
+	public void setSendProgress(long complete, long all);
+	
+	/**
+	 * used to notify the progress of the transmission
+	 * @param complete bytes that have been transmitted
+	 * @param all size of the file
+	 */
+	public void setRecvProgress(long complete, long all);
 }

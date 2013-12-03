@@ -89,9 +89,7 @@ public class PrivatePanel extends ChatPanel {
 		if (jfc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION)
 			return;
 		fileToSend = jfc.getSelectedFile();
-		long filesize = fileToSend.length() >> 10;
-		String filename = fileToSend.getName();
-		m.fileSendRequest(name, filename, filesize);
+		m.fileSendRequest(name, fileToSend.getName(), fileToSend.length());
 	}
 	
 	private void btnVoiceChatclicked() {

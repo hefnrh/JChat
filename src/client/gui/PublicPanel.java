@@ -25,8 +25,6 @@ public class PublicPanel extends ChatPanel {
 
 	public PublicPanel(MainFrame parent, Messenger m, ConfigPanel configPanel,
 			String name) {
-		// TODO don't forget to change back
-		// super(m, new ConfigPanel(), name);
 		super(m, configPanel, name);
 		this.parent = parent;
 

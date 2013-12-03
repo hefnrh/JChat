@@ -67,9 +67,10 @@ public interface Messenger {
 	 * receive file
 	 * @param file the file to receive
 	 * @param port port to connect
+	 * @param size size of the file 
 	 * @return true if the file has been downloaded correctly
 	 */
-	public boolean receiveFile(File file, int port);
+	public boolean receiveFile(File file, int port, long size);
 	
 	/**
 	 * stop the messenger from working

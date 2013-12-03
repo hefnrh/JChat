@@ -41,7 +41,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	private String host;
 	private int port;
 	private File fileToReceive = null;
-	private String filename;
+	private long fileSize = 0;
 
 	public MainFrame(Startup parent, String username, String host, int port) {
 		this.parent = parent;
@@ -230,21 +230,31 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			playNotify();
 		String message;
 		if (fileToReceive != null) {
-			message = from + " wants to send you: " + filename + "(" + filesize
+			message = from + " wants to send you: " + filename + "("
+					+ (filesize >> 10)
 					+ " KB), but you are receiving another file.";
 			JOptionPane.showMessageDialog(this, message);
 			m.fileRequestResponse(from, false);
 			return;
 		}
-		message = from + " wants to send you: " + filename + "(" + filesize
-				+ " KB)";
-		this.filename = filename;
+		message = from + " wants to send you: " + filename + "("
+				+ (filesize >> 10) + " KB)";
+		fileSize = filesize;
 		int res = JOptionPane.showConfirmDialog(this, message, "receive file?",
 				JOptionPane.YES_NO_OPTION);
-		if (res == JOptionPane.YES_OPTION)
-			m.fileRequestResponse(from, true);
-		else
+		if (res != JOptionPane.YES_OPTION) {
 			m.fileRequestResponse(from, false);
+			return;
+		}
+		JFileChooser jfc = new JFileChooser();
+		jfc.setSelectedFile(new File(filename));
+		res = jfc.showSaveDialog(this);
+		if (res != JFileChooser.APPROVE_OPTION) {
+			m.fileRequestResponse(from, false);
+			return;
+		}
+		fileToReceive = jfc.getSelectedFile();
+		m.fileRequestResponse(from, true);
 	}
 
 	@Override
@@ -264,16 +274,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void fileReceive(String sender, int port) {
-		JFileChooser jfc = new JFileChooser();
-		jfc.setSelectedFile(new File(filename));
-		int res = jfc.showSaveDialog(this);
-		while (res != JFileChooser.APPROVE_OPTION) {
-			JOptionPane.showMessageDialog(this,
-					"you must choose a place to save file");
-			res = jfc.showSaveDialog(this);
-		}
-		fileToReceive = jfc.getSelectedFile();
-		m.receiveFile(fileToReceive, port);
+		m.receiveFile(fileToReceive, port, fileSize);
 		JOptionPane.showMessageDialog(this, "transmission over");
 		fileToReceive = null;
 	}
@@ -287,6 +288,15 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		if (!isVisible()) {
 			this.dispose();
 		}
+	}
+
+	@Override
+	public void setSendProgress(long complete, long all) {
+		// TODO
+	}
+
+	public void setRecvProgress(long complete, long all) {
+		// TODO
 	}
 
 	public Properties getSetting(Properties p) {

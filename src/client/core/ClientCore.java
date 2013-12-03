@@ -118,8 +118,11 @@ public class ClientCore implements Messenger {
 				OutputStream os = sendSock.getOutputStream();) {
 			byte[] buf = new byte[8192];
 			int read;
+			long progress = 0, all = file.length();
 			while ((read = is.read(buf)) >= 0) {
 				os.write(buf, 0, read);
+				progress += read;
+				clientCallBack.setSendProgress(progress, all);
 			}
 		} catch (IOException e) {
 			clientCallBack.error(e.getMessage());
@@ -141,7 +144,7 @@ public class ClientCore implements Messenger {
 	}
 
 	@Override
-	public boolean receiveFile(File file, int port) {
+	public boolean receiveFile(File file, int port, long size) {
 		Socket recvSock = new Socket();
 		// connect
 		try {
@@ -161,8 +164,11 @@ public class ClientCore implements Messenger {
 				InputStream is = recvSock.getInputStream();) {
 			byte[] buf = new byte[8192];
 			int read;
+			long progress = 0;
 			while ((read = is.read(buf)) >= 0) {
 				os.write(buf, 0, read);
+				progress += read;
+				clientCallBack.setRecvProgress(progress, size);
 			}
 		} catch (IOException e) {
 			clientCallBack.error(e.getMessage());

@@ -132,7 +132,7 @@ public class BasicClient implements ClientCallBack {
 	@Override
 	public void fileReceive(String sender, int port) {
 		System.out.println("file receive: " + sender + ": port:" + port);
-		m.receiveFile(new File("recv.dat"), port);
+		m.receiveFile(new File("recv.dat"), port, 0);
 	}
 
 	@Override
@@ -165,7 +165,19 @@ public class BasicClient implements ClientCallBack {
 	}
 
 	public void recvFile(File file, int port) {
-		m.receiveFile(file, port);
+		m.receiveFile(file, port, 0);
+	}
+
+	@Override
+	public void setSendProgress(long complete, long all) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setRecvProgress(long complete, long all) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
