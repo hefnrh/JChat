@@ -250,7 +250,7 @@ public abstract class ChatPanel extends JPanel {
 					JOptionPane.showMessageDialog(this,
 							"error when display text");
 				}
-				readPane.setCaretPosition(readPane.getText().length());
+				readPane.setCaretPosition(doc.getLength());
 				return;
 			}
 			int lastPos = 0;
@@ -288,7 +288,7 @@ public abstract class ChatPanel extends JPanel {
 			} catch (BadLocationException e) {
 				JOptionPane.showMessageDialog(this, "error when display text");
 			}
-			readPane.setCaretPosition(readPane.getText().length());
+			readPane.setCaretPosition(doc.getLength());
 		}
 	}
 

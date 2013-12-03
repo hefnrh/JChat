@@ -66,6 +66,16 @@ public class PrivatePanel extends ChatPanel {
 		});
 		btnSendFile.setBounds(10, 490, 117, 25);
 		add(btnSendFile);
+		
+		JButton btnVoiceChat = new JButton("voice chat");
+		btnVoiceChat.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				btnVoiceChatclicked();
+			}
+		});
+		btnVoiceChat.setBounds(137, 490, 117, 25);
+		add(btnVoiceChat);
 	}
 
 	private void btnSendFileClicked() {
@@ -83,7 +93,11 @@ public class PrivatePanel extends ChatPanel {
 		String filename = fileToSend.getName();
 		m.fileSendRequest(name, filename, filesize);
 	}
-
+	
+	private void btnVoiceChatclicked() {
+		// TODO 
+	}
+	
 	@Override
 	protected void sendMessage() {
 		String toSend = getWriteText();

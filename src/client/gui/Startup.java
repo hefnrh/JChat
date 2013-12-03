@@ -116,12 +116,12 @@ public class Startup extends JFrame {
 		// login
 		mainFrame = new MainFrame(this, name, host, port);
 		mainFrame.setMessenger(new ClientCore(mainFrame));
+		mainFrame.init(setting);
 		if (!mainFrame.login()) {
 			JOptionPane.showMessageDialog(this, "login failed!", "ERROR",
 					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		mainFrame.init(setting);
 	}
 
 	public void saveSetting() {
