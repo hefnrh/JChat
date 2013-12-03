@@ -42,6 +42,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	private int port;
 	private File fileToReceive = null;
 	private long fileSize = 0;
+	private ProgressDialog sendBar;
+	private ProgressDialog recvBar;
 
 	public MainFrame(Startup parent, String username, String host, int port) {
 		this.parent = parent;
@@ -267,6 +269,10 @@ public class MainFrame extends JFrame implements ClientCallBack {
 					+ " rejected your request.");
 			return;
 		}
+		if (sendBar == null)
+			sendBar = new ProgressDialog(this);
+		sendBar.setTitle("send: " + privatePanel.get(from).getFile().getName());
+		sendBar.setVisible(true);
 		m.sendFile(privatePanel.get(from).getFile(), port);
 		privatePanel.get(from).fileSendOver();
 		JOptionPane.showMessageDialog(this, "transmission over");
@@ -274,6 +280,10 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void fileReceive(String sender, int port) {
+		if (recvBar == null)
+			recvBar = new ProgressDialog(this);
+		recvBar.setTitle("receive: " + fileToReceive.getName());
+		recvBar.setVisible(true);
 		m.receiveFile(fileToReceive, port, fileSize);
 		JOptionPane.showMessageDialog(this, "transmission over");
 		fileToReceive = null;
@@ -292,11 +302,11 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void setSendProgress(long complete, long all) {
-		// TODO
+		sendBar.setProgress(complete, all);
 	}
 
 	public void setRecvProgress(long complete, long all) {
-		// TODO
+		recvBar.setProgress(complete, all);
 	}
 
 	public Properties getSetting(Properties p) {
