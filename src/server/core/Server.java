@@ -160,6 +160,7 @@ public class Server implements CommandExecutor {
 			String content) {
 		if (!clients.containsKey(listener)) {
 			clients.get(speaker).send("$error $no user called " + listener);
+			return;
 		}
 		clients.get(listener).send(
 				"$talk $private $" + speaker + " $" + content);
@@ -170,6 +171,7 @@ public class Server implements CommandExecutor {
 		if (!clients.containsKey(fileReceiver)) {
 			clients.get(fileSender).send(
 					"$error $no user called " + fileReceiver);
+			return;
 		}
 		clients.get(fileReceiver)
 				.send("$file $req $" + fileSender + " $" + filename + " $"

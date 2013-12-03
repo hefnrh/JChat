@@ -270,7 +270,7 @@ public abstract class ChatPanel extends JPanel {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				readPane.setCaretPosition(readPane.getText().length());
+				readPane.setCaretPosition(doc.getLength());
 				readPane.insertIcon(face[j]);
 				++j;
 			}
