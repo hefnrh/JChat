@@ -87,7 +87,7 @@ public class PublicPanel extends ChatPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				PublicPanel.this.parent.addPrivatePanel(new PrivatePanel(
-						PublicPanel.this.parent, PublicPanel.this.m,
+						PublicPanel.this.parent.getName(), PublicPanel.this.m,
 						PublicPanel.this.configPanel, list.getSelectedValue()));
 			}
 		});

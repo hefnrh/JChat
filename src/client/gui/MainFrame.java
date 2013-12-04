@@ -221,7 +221,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			playNotify();
 		PrivatePanel pp;
 		if (!privatePanel.containsKey(from)) {
-			pp = new PrivatePanel(this, m, configPanel, from);
+			pp = new PrivatePanel(name, m, configPanel, from);
 			addPrivatePanel(pp);
 		} else
 			pp = privatePanel.get(from);
@@ -336,6 +336,9 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	}
 
 	@Override
+	/**
+	 * @return username
+	 */
 	public String getName() {
 		return name;
 	}
@@ -381,16 +384,17 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			JOptionPane.showMessageDialog(this, listener + " rejected your request");
 			return;
 		}
+		new VoiceDialog(m, listener).setVisible(true);
 		m.voiceChat(outPort, inPort);
-		// TODO visible
-		
 		inVoiceChat = false;
+		System.out.println("voice over");
 	}
 
 	@Override
 	public void voiceRecv(String speaker, int outPort, int inPort) {
+		new VoiceDialog(m, speaker).setVisible(true);
 		m.voiceChat(outPort, inPort);
-		// TODO visible
 		inVoiceChat = false;
+		System.out.println("voice over");
 	}
 }

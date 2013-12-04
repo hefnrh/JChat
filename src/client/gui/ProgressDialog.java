@@ -10,6 +10,8 @@ public class ProgressDialog extends JDialog {
 	public ProgressDialog(Frame parent) {
 		super(parent);
 		setSize(400, 100);
+		setResizable(false);
+		setTitle("transmitting file");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(null);
 		

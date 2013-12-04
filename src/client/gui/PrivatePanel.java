@@ -14,10 +14,10 @@ import javax.swing.JScrollPane;
 import client.core.Messenger;
 
 public class PrivatePanel extends ChatPanel {
-	private MainFrame parent;
+	private String parent;
 	private volatile File fileToSend = null;
 
-	public PrivatePanel(MainFrame parent, Messenger m, ConfigPanel configPanel,
+	public PrivatePanel(String parent, Messenger m, ConfigPanel configPanel,
 			String name) {
 		super(m, configPanel, name);
 
@@ -93,7 +93,7 @@ public class PrivatePanel extends ChatPanel {
 	}
 	
 	private void btnVoiceChatclicked() {
-		// TODO 
+		m.voiceRequest(name);
 	}
 	
 	@Override
@@ -104,7 +104,7 @@ public class PrivatePanel extends ChatPanel {
 			return;
 		}
 		m.sendPrivateMessage(name, toSend);
-		appendMessage(parent.getName(), toSend);
+		appendMessage(parent, toSend);
 	}
 	
 	public File getFile() {
