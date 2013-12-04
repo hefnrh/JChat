@@ -16,6 +16,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
+import javax.sound.sampled.LineUnavailableException;
+
+import client.gui.multimedia.SoundCapturer;
+import client.gui.multimedia.SoundPlayer;
+
 /**
  * ClientCore has the core functions of the chat system client. It listens
  * messages from server.
@@ -34,6 +39,8 @@ public class ClientCore implements Messenger {
 	private PrintWriter pw = null;
 	private Thread listener = null;
 	private ExecutorService pool = Executors.newCachedThreadPool();
+	private SoundPlayer player;
+	private SoundCapturer cap;
 
 	private Pattern p = Pattern.compile("[$\\s]+");
 
@@ -136,14 +143,14 @@ public class ClientCore implements Messenger {
 			}
 			return false;
 		}
-		
+
 		try {
 			sendSock.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return true;
-		
+
 	}
 
 	@Override
@@ -182,23 +189,22 @@ public class ClientCore implements Messenger {
 			}
 			return false;
 		}
-		
+
 		try {
 			recvSock.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return true;
-		
+
 	}
-	
+
 	@Override
-	public void stop() {
-		try {
-			sock.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void stopVoiceChat() {
+		if (player != null)
+			player.stop();
+		if (cap != null)
+			cap.stop();
 	}
 
 	/**
@@ -298,16 +304,79 @@ public class ClientCore implements Messenger {
 						Boolean.parseBoolean(params[3]),
 						Integer.parseInt(params[4]));
 			} else {
-				clientCallBack.fileReceive(params[1],
-						Integer.parseInt(params[2]));
+				clientCallBack.fileReceive(params[2],
+						Integer.parseInt(params[3]));
 			}
 			break;
 		case "$error":
 			clientCallBack.error(command.substring(1));
 			break;
+		case "$voice":
+			params = p.split(command);
+			if (command.startsWith("$req")) {
+				clientCallBack.voiceRequest(params[2]);
+			} else if (command.startsWith("$res")) {
+				clientCallBack.voiceResponse(params[2],
+						Boolean.parseBoolean(params[3]),
+						Integer.parseInt(params[4]),
+						Integer.parseInt(params[5]));
+			} else {
+				clientCallBack.voiceRecv(params[2],
+						Integer.parseInt(params[3]),
+						Integer.parseInt(params[4]));
+			}
+			break;
 		default:
 			// something to do?
 			break;
+		}
+	}
+
+	@Override
+	public boolean voiceRequest(String listener) {
+		send("$voice $req $" + listener);
+		return true;
+	}
+
+	@Override
+	public boolean voiceRespond(String speaker, boolean accepted) {
+		send("$voice $res $" + speaker + " $" + accepted);
+		return false;
+	}
+
+	@Override
+	public void voiceChat(int outPort, int inPort) {
+		Socket sendSock = new Socket(), recvSock = new Socket();
+		try {
+			sendSock.connect(new InetSocketAddress(sock.getInetAddress()
+					.getHostAddress(), outPort), 5000);
+			recvSock.connect(new InetSocketAddress(sock.getInetAddress()
+					.getHostAddress(), inPort), 5000);
+		} catch (IOException e) {
+			clientCallBack.error(e.getMessage());
+			try {
+				sendSock.close();
+				recvSock.close();
+			} catch (IOException e1) {
+				e.printStackTrace();
+			}
+			return;
+		}
+		try {
+			cap = new SoundCapturer(sendSock.getOutputStream());
+			player = new SoundPlayer(recvSock.getInputStream());
+			Thread capThread = new Thread(cap);
+			Thread playThread = new Thread(player);
+			capThread.start();
+			playThread.start();
+			capThread.join();
+			playThread.join();
+		} catch (LineUnavailableException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 

@@ -7,6 +7,8 @@ client can send:
 	$talk $private $<receiver> $<content>
 	$file $req $<fileReceiver> $<filename> $<size>
 	$file $res $<fileSender> $true/false
+	$voice $req $<listener>
+	$voice $res $<speaker> $true/false
 	
 server can send:
 	$online $<username1> $<username2> ...
@@ -15,5 +17,8 @@ server can send:
 	$talk $private $<speaker> $<content>
 	$file $req $<fileSender> $<filename> $<size>
 	$file $res $<fileReceiver> $true/false $<port>
-	$file $<fileSender> $<port>
+	$file $send $<fileSender> $<port>
+	$voice $req $<speaker>
+	$voice $res $<listener> $true/false $<outPort> $<inPort>
+	$voice $send $<speaker> $<$outPort> $<inPort>
 	$error $<message>

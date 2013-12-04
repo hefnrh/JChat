@@ -180,4 +180,23 @@ public class BasicClient implements ClientCallBack {
 		
 	}
 
+	@Override
+	public void voiceRequest(String speaker) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void voiceResponse(String listener, boolean accepted, int outPort,
+			int inPort) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void voiceRecv(String speaker, int outPort, int inPort) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

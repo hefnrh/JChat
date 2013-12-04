@@ -73,7 +73,29 @@ public interface Messenger {
 	public boolean receiveFile(File file, int port, long size);
 	
 	/**
-	 * stop the messenger from working
+	 * stop the messenger from voice chat
 	 */
-	public void stop();
+	public void stopVoiceChat();
+	
+	/**
+	 * send a voice chat request to someone
+	 * @param listener name of listener
+	 * @return true if the request has been sent correctly
+	 */
+	public boolean voiceRequest(String listener);
+	
+	/**
+	 * respond to voice chat request
+	 * @param speaker name of speaker
+	 * @param accepted true if accept
+	 * @return true if the response has been sent correctly
+	 */
+	public boolean voiceRespond(String speaker, boolean accepted);
+	
+	/**
+	 * start a voice chat
+	 * @param outPort port to send voice data
+	 * @param inPort port to receive voice data
+	 */
+	public void voiceChat(int outPort, int inPort);
 }

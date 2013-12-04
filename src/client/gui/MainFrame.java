@@ -42,11 +42,12 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	private String name;
 	private String host;
 	private int port;
-	private File fileToReceive = null;
+	private volatile File fileToReceive = null;
 	private long fileSize = 0;
 	private ExecutorService pool = Executors.newCachedThreadPool();
 	private ProgressDialog sendBar = null;
 	private ProgressDialog recvBar = null;
+	private volatile boolean inVoiceChat = false;
 
 	public MainFrame(Startup parent, String username, String host, int port) {
 		this.parent = parent;
@@ -346,5 +347,50 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void voiceRequest(String speaker) {
+		if (!chckbxmntmMute.isSelected())
+			playNotify();
+		if (inVoiceChat) {
+			JOptionPane
+					.showMessageDialog(
+							this,
+							speaker
+									+ " wants to voice chat with you, but you are voice chatting, so rejected.");
+			m.voiceRespond(speaker, false);
+			return;
+		}
+		int res = JOptionPane.showConfirmDialog(this, speaker
+				+ "wants to voice chat with you", "voice chat?",
+				JOptionPane.YES_NO_OPTION);
+		if (res != JOptionPane.YES_OPTION) {
+			m.voiceRespond(speaker, false);
+			return;
+		}
+		inVoiceChat = true;
+		m.voiceRespond(speaker, true);
+	}
+
+	@Override
+	public void voiceResponse(String listener, boolean accepted, int outPort,
+			int inPort) {
+		inVoiceChat = true;
+		if (!accepted) {
+			JOptionPane.showMessageDialog(this, listener + " rejected your request");
+			return;
+		}
+		m.voiceChat(outPort, inPort);
+		// TODO visible
+		
+		inVoiceChat = false;
+	}
+
+	@Override
+	public void voiceRecv(String speaker, int outPort, int inPort) {
+		m.voiceChat(outPort, inPort);
+		// TODO visible
+		inVoiceChat = false;
 	}
 }

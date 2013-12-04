@@ -15,7 +15,7 @@ import client.core.Messenger;
 
 public class PrivatePanel extends ChatPanel {
 	private MainFrame parent;
-	private File fileToSend = null;
+	private volatile File fileToSend = null;
 
 	public PrivatePanel(MainFrame parent, Messenger m, ConfigPanel configPanel,
 			String name) {

@@ -1,6 +1,7 @@
 package client.gui.multimedia;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import javax.sound.sampled.AudioFormat;
@@ -16,6 +17,7 @@ public class SoundPlayer implements Runnable {
 	private AudioFormat format;
 	private AudioInputStream ais;
 	private SourceDataLine line;
+	private boolean stop = false;
 
 	public SoundPlayer(URL fileToPlay) throws UnsupportedAudioFileException,
 			IOException, LineUnavailableException {
@@ -25,23 +27,34 @@ public class SoundPlayer implements Runnable {
 				SourceDataLine.class, format));
 	}
 
+	public SoundPlayer(InputStream in) throws LineUnavailableException {
+		format = new AudioFormat(8000, 16, 2, true, true);
+		ais = new AudioInputStream(in, format, Integer.MAX_VALUE);
+		line = (SourceDataLine) AudioSystem.getLine(new DataLine.Info(
+				SourceDataLine.class, format));
+	}
+
 	@Override
-	synchronized public void run() {
+	public void run() {
 		byte[] buffer = new byte[8192];
 		int read;
 		try {
 			line.open(format);
 			line.start();
-			while ((read = ais.read(buffer)) >= 0)
+			while (!stop && (read = ais.read(buffer)) >= 0)
 				line.write(buffer, 0, read);
 			line.drain();
 			line.close();
+			ais.close();
 		} catch (LineUnavailableException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		};
-		
+		}
+	}
+	
+	public void stop() {
+		stop = true;
 	}
 
 }

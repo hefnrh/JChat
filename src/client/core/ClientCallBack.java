@@ -71,4 +71,27 @@ public interface ClientCallBack {
 	 * @param all size of the file
 	 */
 	public void setRecvProgress(long complete, long all);
+	
+	/**
+	 * handle voice chat request
+	 * @param speaker name of speaker
+	 */
+	public void voiceRequest(String speaker);
+	
+	/**
+	 * the response of voice chat request
+	 * @param listener name of listener
+	 * @param accepted whether accept the request
+	 * @param outPort port to send voice data
+	 * @param inPort port to receive voice data
+	 */
+	public void voiceResponse(String listener, boolean accepted, int outPort, int inPort);
+	
+	/**
+	 * handle voice receive message from the server
+	 * @param speaker name of speaker
+	 * @param outPort port to send voice data
+	 * @param inPort port to receive voice data
+	 */
+	public void voiceRecv(String speaker, int outPort, int inPort);
 }

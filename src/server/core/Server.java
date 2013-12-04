@@ -9,6 +9,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 /**
@@ -24,7 +26,7 @@ public class Server implements CommandExecutor {
 	private Thread listener;
 	// for synchronize
 	private Object listLock = new Object();
-	private Object portLock = new Object();
+	private ExecutorService pool = Executors.newCachedThreadPool();
 
 	private int serverPort;
 	private int portToUse;
@@ -116,10 +118,139 @@ public class Server implements CommandExecutor {
 						Boolean.parseBoolean(params[3]));
 			}
 			break;
+		case "$voice":
+			params = p.split(command);
+			if (command.startsWith("$req")) {
+				sendVoiceReq(username, params[2]);
+			} else {
+				sendVoiceRes(username, params[2],
+						Boolean.parseBoolean(params[3]));
+			}
+			break;
 		default:
 			// something to do?
 			break;
 		}
+	}
+
+	private void sendVoiceReq(String speaker, String listener) {
+		if (!clients.containsKey(listener)) {
+			clients.get(speaker).send("no user called " + listener);
+			return;
+		}
+		clients.get(listener).send("$voice $req $" + speaker);
+	}
+
+	private ServerSocket generateServerSocket() {
+		ServerSocket ret = null;
+		while (true) {
+			try {
+				ret = new ServerSocket();
+				ret.setReuseAddress(true);
+				ret.bind(new InetSocketAddress(portGenerate()));
+			} catch (BindException be) {
+				try {
+					ret.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				continue;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+			break;
+		}
+		return ret;
+	}
+
+	private void sendVoiceRes(String listener, String speaker, boolean accepted) {
+		if (!accepted) {
+			clients.get(speaker).send(
+					"$voice $res $" + listener + " $false $-1 $-1");
+			return;
+		}
+		// generate 4 server socket
+		final ServerSocket src1 = generateServerSocket();
+		if (src1 == null) {
+			clients.get(listener).send(
+					"$error $server error in voice transmission");
+			clients.get(speaker).send(
+					"$error $server error in voice transmission");
+			return;
+		}
+		final ServerSocket src2 = generateServerSocket();
+		if (src2 == null) {
+			try {
+				src1.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			clients.get(listener).send(
+					"$error $server error in voice transmission");
+			clients.get(speaker).send(
+					"$error $server error in voice transmission");
+			return;
+		}
+		final ServerSocket dst1 = generateServerSocket();
+		if (dst1 == null) {
+			try {
+				src1.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				src2.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			clients.get(listener).send(
+					"$error $server error in voice transmission");
+			clients.get(speaker).send(
+					"$error $server error in voice transmission");
+			return;
+		}
+		final ServerSocket dst2 = generateServerSocket();
+		if (dst2 == null) {
+			try {
+				src1.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				src2.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				dst1.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			clients.get(listener).send(
+					"$error $server error in voice transmission");
+			clients.get(speaker).send(
+					"$error $server error in voice transmission");
+			return;
+		}
+		clients.get(speaker).send(
+				"$voice $res $" + listener + " $true $" + src1.getLocalPort()
+						+ " $" + dst2.getLocalPort());
+		clients.get(listener).send(
+				"$voice $send $" + speaker + " $" + src2.getLocalPort() + " $"
+						+ dst1.getLocalPort());
+		pool.execute(new Runnable() {
+			@Override
+			public void run() {
+				exchangeData(src1, dst1);
+			}
+		});
+		pool.execute(new Runnable() {
+			@Override
+			public void run() {
+				exchangeData(src2, dst2);
+			}
+		});
 	}
 
 	@Override
@@ -194,46 +325,36 @@ public class Server implements CommandExecutor {
 		if (!accepted) {
 			clients.get(fileSender).send(
 					"$file $res $" + fileReceiver + " $false $-1");
-		} else {
-			ServerSocket srcServer = null, dstServer = null;
-			int srcPort, dstPort;
-				synchronized (portLock) {
-					while (true) {
-						try {
-							srcServer = new ServerSocket();
-							dstServer = new ServerSocket();
-							srcPort = portGenerate();
-							dstPort = portGenerate();
-							while (dstPort == srcPort)
-								dstPort = portGenerate();
-							srcServer.setReuseAddress(true);
-							dstServer.setReuseAddress(true);
-							srcServer.bind(new InetSocketAddress(srcPort));
-							dstServer.bind(new InetSocketAddress(dstPort));
-						} catch (BindException be) {
-							continue;
-						} catch (IOException e) {
-							e.printStackTrace();
-							clients.get(fileSender).send("$error $server error in file transmission");
-							clients.get(fileReceiver).send("$error $server error in file transmission");
-							return;
-						} 
-						break;
-					}
-					clients.get(fileSender).send(
-							"$file $res $" + fileReceiver + " $true $"
-									+ srcPort);
-					clients.get(fileReceiver).send(
-							"$file $" + fileSender + " $" + dstPort);
-				}
-				exchangeFile(srcServer, dstServer);
-				try {
-					srcServer.close();
-					dstServer.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			return;
 		}
+		ServerSocket srcServer = generateServerSocket();
+		if (srcServer == null) {
+			clients.get(fileReceiver).send(
+					"$error $server error in file transmission");
+			clients.get(fileSender).send(
+					"$error $server error in file transmission");
+			return;
+		}
+		ServerSocket dstServer = generateServerSocket();
+		if (dstServer == null) {
+			try {
+				srcServer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			clients.get(fileReceiver).send(
+					"$error $server error in file transmission");
+			clients.get(fileSender).send(
+					"$error $server error in file transmission");
+			return;
+		}
+
+		clients.get(fileSender).send(
+				"$file $res $" + fileReceiver + " $true $"
+						+ srcServer.getLocalPort());
+		clients.get(fileReceiver).send(
+				"$file $send $" + fileSender + " $" + dstServer.getLocalPort());
+		exchangeData(srcServer, dstServer);
 	}
 
 	/**
@@ -248,27 +369,34 @@ public class Server implements CommandExecutor {
 	}
 
 	/**
-	 * listen to two port and transform file from one client to another
+	 * listen to two port and transform data from one client to another
 	 * 
 	 * @param srcServer
 	 *            listen to sender connection
 	 * @param dstServer
 	 *            listen to receiver connection
 	 */
-	private void exchangeFile(ServerSocket srcServer, ServerSocket dstServer) {
-		try {
-			Socket src = srcServer.accept();
-			Socket dst = dstServer.accept();
-			try (InputStream is = src.getInputStream();
-					OutputStream os = dst.getOutputStream();) {
-				byte[] buf = new byte[8192];
-				int read;
-				while ((read = is.read(buf)) >= 0) {
-					os.write(buf, 0, read);
-				}
+	private void exchangeData(ServerSocket srcServer, ServerSocket dstServer) {
+
+		try (Socket src = srcServer.accept();
+				Socket dst = dstServer.accept();
+				InputStream is = src.getInputStream();
+				OutputStream os = dst.getOutputStream();) {
+			try {
+				srcServer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-			src.close();
-			dst.close();
+			try {
+				dstServer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			byte[] buf = new byte[4096];
+			int read;
+			while ((read = is.read(buf)) >= 0) {
+				os.write(buf, 0, read);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
