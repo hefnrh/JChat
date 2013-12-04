@@ -16,6 +16,7 @@ import client.core.Messenger;
 public class PrivatePanel extends ChatPanel {
 	private String parent;
 	private volatile File fileToSend = null;
+	private boolean reqed = false;
 
 	public PrivatePanel(String parent, Messenger m, ConfigPanel configPanel,
 			String name) {
@@ -71,6 +72,9 @@ public class PrivatePanel extends ChatPanel {
 		btnVoiceChat.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if (reqed)
+					return;
+				reqed = true;
 				btnVoiceChatclicked();
 			}
 		});
@@ -112,5 +116,9 @@ public class PrivatePanel extends ChatPanel {
 	}
 	public void fileSendOver() {
 		fileToSend = null;
+	}
+	
+	public void setUnreqed() {
+		reqed = false;
 	}
 }

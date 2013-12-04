@@ -379,11 +379,12 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	@Override
 	public void voiceResponse(String listener, boolean accepted, int outPort,
 			int inPort) {
-		inVoiceChat = true;
+		((PrivatePanel) privatePanel.get(listener)).setUnreqed();
 		if (!accepted) {
 			JOptionPane.showMessageDialog(this, listener + " rejected your request");
 			return;
 		}
+		inVoiceChat = true;
 		new VoiceDialog(m, listener).setVisible(true);
 		m.voiceChat(outPort, inPort);
 		inVoiceChat = false;
