@@ -15,12 +15,14 @@ public class ProgressDialog extends JDialog {
 		
 		progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
+		progressBar.setMaximum(100);
+		progressBar.setMinimum(0);
 		progressBar.setBounds(12, 12, 366, 46);
 		getContentPane().add(progressBar);
 	}
 	
 	public void setProgress(long complete, long all) {
-		progressBar.setValue((int) (complete / all) * 100);
 		progressBar.setString(complete + " / " + all);
+		progressBar.setValue((int) (complete * 100 / all)); 
 	}
 }

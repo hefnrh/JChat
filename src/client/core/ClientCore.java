@@ -12,6 +12,8 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 /**
@@ -31,6 +33,7 @@ public class ClientCore implements Messenger {
 	private Socket sock = null;
 	private PrintWriter pw = null;
 	private Thread listener = null;
+	private ExecutorService pool = Executors.newCachedThreadPool();
 
 	private Pattern p = Pattern.compile("[$\\s]+");
 
@@ -231,13 +234,17 @@ public class ClientCore implements Messenger {
 			public void run() {
 				try (BufferedReader br = new BufferedReader(
 						new InputStreamReader(sock.getInputStream()));) {
-					String msg;
 					while (sock != null && sock.isConnected()
 							&& !sock.isInputShutdown()) {
-						msg = br.readLine();
+						final String msg = br.readLine();
 						if (msg == null)
 							throw new IOException("connection is down!");
-						exec(msg);
+						pool.execute(new Runnable() {
+							@Override
+							public void run() {
+								exec(msg);
+							}
+						});
 					}
 				} catch (IOException e) {
 					clientCallBack.error(e.getMessage());

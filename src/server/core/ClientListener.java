@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * This client listen to client message and perform basic message sending
@@ -18,6 +20,7 @@ public class ClientListener extends Thread {
 	private Socket sock;
 	private PrintWriter pw = null;
 	private CommandExecutor ce;
+	private ExecutorService pool = Executors.newCachedThreadPool();
 	private String name;
 
 	public ClientListener(Socket socket, CommandExecutor ce) {
@@ -53,21 +56,27 @@ public class ClientListener extends Thread {
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(
 				sock.getInputStream()));) {
 			// first message is login command
-			String msg = br.readLine();
-			String name = msg.substring(msg.indexOf(" $") + 2);
+			String loginMsg = br.readLine();
+			final String name = loginMsg.substring(loginMsg.indexOf(" $") + 2);
 			this.name = name;
 			if (!ce.add(name, this)) {
 				send("$error $username already in use!");
 				return;
 			}
+			loginMsg = null;
 			while (sock != null && sock.isConnected()
 					&& !sock.isInputShutdown()) {
-				msg = br.readLine();
+				final String msg = br.readLine();
 				if (msg == null) {
 					System.out.println("read null from " + name);
 					throw new IOException();
 				}
-				ce.exec(msg, name);
+				pool.execute(new Runnable() {
+					@Override
+					public void run() {
+						ce.exec(msg, name);
+					}
+				});
 			}
 			ce.remove(name);
 		} catch (IOException e) {

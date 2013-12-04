@@ -12,6 +12,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
@@ -42,8 +44,9 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	private int port;
 	private File fileToReceive = null;
 	private long fileSize = 0;
-	private ProgressDialog sendBar;
-	private ProgressDialog recvBar;
+	private ExecutorService pool = Executors.newCachedThreadPool();
+	private ProgressDialog sendBar = null;
+	private ProgressDialog recvBar = null;
 
 	public MainFrame(Startup parent, String username, String host, int port) {
 		this.parent = parent;
@@ -189,11 +192,11 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	public void online(String[] names) {
 		if (!chckbxmntmMute.isSelected())
 			playNotify();
+		publicPanel.addUser(names);
 		if (!isVisible()) {
 			setVisible(true);
 			parent.setVisible(false);
 		}
-		publicPanel.addUser(names);
 	}
 
 	@Override
@@ -275,6 +278,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		sendBar.setVisible(true);
 		m.sendFile(privatePanel.get(from).getFile(), port);
 		privatePanel.get(from).fileSendOver();
+		sendBar.dispose();
 		JOptionPane.showMessageDialog(this, "transmission over");
 	}
 
@@ -285,6 +289,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		recvBar.setTitle("receive: " + fileToReceive.getName());
 		recvBar.setVisible(true);
 		m.receiveFile(fileToReceive, port, fileSize);
+		recvBar.dispose();
 		JOptionPane.showMessageDialog(this, "transmission over");
 		fileToReceive = null;
 	}
@@ -336,8 +341,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	private void playNotify() {
 		try {
-			new Thread(new SoundPlayer(
-					MainFrame.class.getResource("notify.wav"))).start();
+			pool.execute(new SoundPlayer(MainFrame.class
+					.getResource("notify.wav")));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
