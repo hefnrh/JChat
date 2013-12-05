@@ -47,6 +47,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	private ExecutorService pool = Executors.newCachedThreadPool();
 	private ProgressDialog sendBar = null;
 	private ProgressDialog recvBar = null;
+	private VoiceDialog voiceDialog = null;
 	private volatile boolean inVoiceChat = false;
 
 	public MainFrame(Startup parent, String username, String host, int port) {
@@ -385,7 +386,11 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			return;
 		}
 		inVoiceChat = true;
-		new VoiceDialog(m, listener).setVisible(true);
+		if (voiceDialog == null)
+			voiceDialog = new VoiceDialog(m, listener);
+		else
+			voiceDialog.setListener(listener);
+		voiceDialog.setVisible(true);
 		m.voiceChat(outPort, inPort);
 		inVoiceChat = false;
 		System.out.println("voice over");
@@ -393,9 +398,19 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void voiceRecv(String speaker, int outPort, int inPort) {
-		new VoiceDialog(m, speaker).setVisible(true);
+		if (voiceDialog == null)
+			voiceDialog = new VoiceDialog(m, speaker);
+		else
+			voiceDialog.setListener(speaker);
+		voiceDialog.setVisible(true);
 		m.voiceChat(outPort, inPort);
 		inVoiceChat = false;
 		System.out.println("voice over");
+	}
+	
+	public void voiceOver() {
+		JOptionPane.showMessageDialog(this, "voice chat over");
+		if (voiceDialog != null)
+			voiceDialog.dispose();
 	}
 }

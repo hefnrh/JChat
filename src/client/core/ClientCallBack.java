@@ -94,4 +94,9 @@ public interface ClientCallBack {
 	 * @param inPort port to receive voice data
 	 */
 	public void voiceRecv(String speaker, int outPort, int inPort);
+	
+	/**
+	 * handle voice chat over event
+	 */
+	public void voiceOver();
 }

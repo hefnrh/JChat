@@ -199,4 +199,10 @@ public class BasicClient implements ClientCallBack {
 		
 	}
 
+	@Override
+	public void voiceOver() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

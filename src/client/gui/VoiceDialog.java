@@ -46,4 +46,8 @@ public class VoiceDialog extends JDialog {
 	private void stopChat() {
 		m.stopVoiceChat();
 	}
+	
+	public void setListener(String listener) {
+		setTitle("voice chat with " + listener);
+	}
 }

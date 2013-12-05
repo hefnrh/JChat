@@ -378,6 +378,7 @@ public class ClientCore implements Messenger {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		clientCallBack.voiceOver();
 	}
 
 }
