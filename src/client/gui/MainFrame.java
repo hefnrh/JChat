@@ -25,6 +25,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
+import javax.swing.filechooser.FileFilter;
 
 import client.core.ClientCallBack;
 import client.core.Messenger;
@@ -32,6 +34,7 @@ import client.gui.multimedia.SoundPlayer;
 
 public class MainFrame extends JFrame implements ClientCallBack {
 	private Startup parent;
+	private BgPanel bgPanel;
 	private JTabbedPane tabbedPane;
 	private PublicPanel publicPanel;
 	private ConfigPanel configPanel;
@@ -49,6 +52,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	private ProgressDialog recvBar = null;
 	private VoiceDialog voiceDialog = null;
 	private volatile boolean inVoiceChat = false;
+	private JFileChooser bgChooser;
 
 	public MainFrame(Startup parent, String username, String host, int port) {
 		this.parent = parent;
@@ -78,6 +82,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		setResizable(false);
 		getContentPane().setLayout(null);
 		setSize(800, 620);
+
+		UIManager.put("TabbedPane.contentOpaque", Boolean.FALSE);
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.addMouseListener(new MouseAdapter() {
@@ -94,7 +100,10 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			}
 		});
 		tabbedPane.setBounds(10, 10, 774, 552);
-		getContentPane().add(tabbedPane);
+		bgPanel = new BgPanel();
+		bgPanel.setBounds(0, 0, 800, 600);
+		bgPanel.add(tabbedPane);
+		getContentPane().add(bgPanel);
 
 		privatePanel = new HashMap<>();
 		configPanel = new ConfigPanel();
@@ -106,6 +115,15 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 		JMenu mnOption = new JMenu("option");
 		menuBar.add(mnOption);
+
+		JMenuItem bgSelect = new JMenuItem("background");
+		bgSelect.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				selectBackground();
+			}
+		});
+		mnOption.add(bgSelect);
 
 		chckbxmntmMute = new JCheckBoxMenuItem("mute");
 		mnOption.add(chckbxmntmMute);
@@ -186,6 +204,12 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		// get mute setting
 		chckbxmntmMute.setSelected(Boolean.parseBoolean(p.getProperty("mute",
 				"false")));
+		// get background
+		String bg = p.getProperty("background", "");
+		if (bg.length() > 0) {
+			ImageIcon img = new ImageIcon(bg);
+			bgPanel.setImage(img);
+		}
 
 		publicPanel.loadConfigPanel();
 	}
@@ -210,6 +234,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void talkPublic(String from, String content) {
+		if (publicPanel.isBlack(from))
+			return;
 		publicPanel.appendMessage(from, content);
 		if (tabbedPane.getSelectedComponent() != publicPanel)
 			tabbedPane.setTitleAt(tabbedPane.indexOfComponent(publicPanel),
@@ -218,6 +244,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void talkPrivate(String from, String content) {
+		if (publicPanel.isBlack(from))
+			return;
 		if (!chckbxmntmMute.isSelected())
 			playNotify();
 		PrivatePanel pp;
@@ -233,6 +261,10 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void fileRequest(String from, String filename, long filesize) {
+		if (publicPanel.isBlack(from)) {
+			m.fileRequestResponse(from, false);
+			return;
+		}
 		if (!chckbxmntmMute.isSelected())
 			playNotify();
 		String message;
@@ -326,6 +358,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		p.setProperty("mainX", getX() + "");
 		p.setProperty("mainY", getY() + "");
 		p.setProperty("mute", chckbxmntmMute.isSelected() + "");
+		p.setProperty("background", bgPanel.getImage());
 		return p;
 	}
 
@@ -355,6 +388,10 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	@Override
 	public void voiceRequest(String speaker) {
+		if (publicPanel.isBlack(speaker)) {
+			m.voiceRespond(speaker, false);
+			return;
+		}
 		if (!chckbxmntmMute.isSelected())
 			playNotify();
 		if (inVoiceChat) {
@@ -382,7 +419,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			int inPort) {
 		((PrivatePanel) privatePanel.get(listener)).setUnreqed();
 		if (!accepted) {
-			JOptionPane.showMessageDialog(this, listener + " rejected your request");
+			JOptionPane.showMessageDialog(this, listener
+					+ " rejected your request");
 			return;
 		}
 		inVoiceChat = true;
@@ -407,10 +445,47 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		inVoiceChat = false;
 		System.out.println("voice over");
 	}
-	
+
 	public void voiceOver() {
 		JOptionPane.showMessageDialog(this, "voice chat over");
 		if (voiceDialog != null)
 			voiceDialog.dispose();
+	}
+
+	private void selectBackground() {
+		if (bgChooser == null) {
+			bgChooser = new JFileChooser();
+			bgChooser.setFileFilter(new FileFilter() {
+				@Override
+				public String getDescription() {
+					return ".jpg, .jpeg, .bmp, .png";
+				}
+
+				@Override
+				public boolean accept(File f) {
+					if (f.isDirectory())
+						return true;
+					String name = f.getName();
+					int index = name.lastIndexOf(".");
+					if (index < 0)
+						return false;
+					name = name.substring(index + 1);
+					switch (name.toLowerCase()) {
+					case "jpg":
+					case "jpeg":
+					case "png":
+					case "bmp":
+						return true;
+					default:
+						return false;
+					}
+				}
+			});
+		}
+		int ret = bgChooser.showOpenDialog(this);
+		if (ret != JFileChooser.APPROVE_OPTION)
+			return;
+		File bgImage = bgChooser.getSelectedFile();
+		bgPanel.setImage(new ImageIcon(bgImage.getAbsolutePath()));
 	}
 }

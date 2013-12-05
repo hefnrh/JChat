@@ -23,6 +23,7 @@ public class ConfigPanel extends JPanel {
 	public ConfigPanel() {
 		setSize(472, 35);
 		setLayout(null);
+		setOpaque(false);
 		JLabel lblColor = new JLabel("color");
 		lblColor.setBounds(10, 10, 36, 15);
 		add(lblColor);

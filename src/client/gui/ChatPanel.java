@@ -46,7 +46,8 @@ public abstract class ChatPanel extends JPanel {
 		this.configPanel = configPanel;
 		setLayout(null);
 		setSize(774, 521);
-
+		setOpaque(false);
+		
 		JLabel lblFace = new JLabel("face");
 		lblFace.setBounds(492, 372, 38, 15);
 		add(lblFace);
@@ -78,6 +79,7 @@ public abstract class ChatPanel extends JPanel {
 
 		readPane = new JTextPane();
 		readPane.setEditable(false);
+		readPane.setOpaque(false);
 
 		btnSend = new JButton("send");
 

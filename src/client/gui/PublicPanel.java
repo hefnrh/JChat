@@ -7,8 +7,11 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -18,10 +21,12 @@ import javax.swing.JScrollPane;
 import client.core.Messenger;
 
 public class PublicPanel extends ChatPanel {
-	private JList<String> list;
-	private DefaultListModel<String> onlineModel;
+	private JList<User> list;
+	private DefaultListModel<User> onlineModel;
 	private JPopupMenu listPop;
+	private JCheckBoxMenuItem pBlack;
 	private MainFrame parent;
+	private List<String> blackList = new ArrayList<>();
 
 	public PublicPanel(MainFrame parent, Messenger m, ConfigPanel configPanel,
 			String name) {
@@ -30,12 +35,16 @@ public class PublicPanel extends ChatPanel {
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(10, 10, 579, 342);
+		scrollPane.setOpaque(false);
+		scrollPane.getViewport().setOpaque(false);
 		add(scrollPane);
 
 		scrollPane.setViewportView(readPane);
 
 		JScrollPane scrollPane_1 = new JScrollPane();
 		scrollPane_1.setBounds(10, 407, 579, 71);
+		scrollPane_1.setOpaque(false);
+		scrollPane_1.getViewport().setOpaque(false);
 		add(scrollPane_1);
 
 		writePane.addKeyListener(new KeyAdapter() {
@@ -51,17 +60,26 @@ public class PublicPanel extends ChatPanel {
 
 		JScrollPane scrollPane_2 = new JScrollPane();
 		scrollPane_2.setBounds(598, 10, 166, 501);
+		scrollPane_2.setOpaque(false);
+		scrollPane_2.getViewport().setOpaque(false);
 		add(scrollPane_2);
 
 		onlineModel = new DefaultListModel<>();
 		list = new JList<>();
 		list.setModel(onlineModel);
+		list.setOpaque(false);
+		list.setCellRenderer(new ListRenderer());
 		list.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				int index = list.locationToIndex(new Point(e.getX(), e.getY()));
 				list.setSelectedIndex(index);
 				if (e.getButton() == MouseEvent.BUTTON3) {
+					User u = list.getSelectedValue();
+					if (u.isBlack())
+						pBlack.setSelected(true);
+					else
+						pBlack.setSelected(false);
 					listPop.show(list, e.getX(), e.getY());
 				}
 			}
@@ -88,10 +106,25 @@ public class PublicPanel extends ChatPanel {
 			public void actionPerformed(ActionEvent e) {
 				PublicPanel.this.parent.addPrivatePanel(new PrivatePanel(
 						PublicPanel.this.parent.getName(), PublicPanel.this.m,
-						PublicPanel.this.configPanel, list.getSelectedValue()));
+						PublicPanel.this.configPanel, list.getSelectedValue().name));
 			}
 		});
 		listPop.add(pChat);
+		pBlack = new JCheckBoxMenuItem("black list");
+		pBlack.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				User u = list.getSelectedValue();
+				if (u.isBlack()) {
+					blackList.remove(u.name);
+					u.setBlack(false);
+				} else {
+					blackList.add(u.name);
+					u.setBlack(true);
+				}
+			}
+		});
+		listPop.add(pBlack);
 	}
 
 	@Override
@@ -110,7 +143,7 @@ public class PublicPanel extends ChatPanel {
 		for (String name : user) {
 			if (name.length() == 0)
 				continue;
-			onlineModel.addElement(name);
+			onlineModel.addElement(new User(name));
 			sb.append(name);
 			sb.append(", ");
 		}
@@ -132,5 +165,35 @@ public class PublicPanel extends ChatPanel {
 		sb.append("leave.");
 		appendSystemMessage(sb.toString());
 	}
-
+	
+	public static class User {
+		public final String name;
+		private boolean black = false;
+		public User(String name) {
+			this.name = name;
+		}
+		public boolean isBlack() {
+			return black;
+		}
+		public void setBlack(boolean b) {
+			black = b;
+		}
+		@Override
+		public String toString() {
+			return name;
+		}
+		@Override
+		public boolean equals(Object o) {
+			return name.equals(o);
+		}
+		@Override
+		public int hashCode() {
+			return name.hashCode();
+		}
+	}
+	
+	public boolean isBlack(String name) {
+		return blackList.contains(name);
+	}
+	
 }

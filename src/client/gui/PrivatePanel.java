@@ -26,12 +26,16 @@ public class PrivatePanel extends ChatPanel {
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(10, 10, 754, 342);
+		scrollPane.setOpaque(false);
+		scrollPane.getViewport().setOpaque(false);
 		add(scrollPane);
 
 		scrollPane.setViewportView(readPane);
 
 		JScrollPane scrollPane_1 = new JScrollPane();
 		scrollPane_1.setBounds(10, 407, 754, 71);
+		scrollPane_1.setOpaque(false);
+		scrollPane_1.getViewport().setOpaque(false);
 		add(scrollPane_1);
 
 		writePane.addKeyListener(new KeyAdapter() {
