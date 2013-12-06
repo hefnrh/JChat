@@ -15,6 +15,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.naming.NameNotFoundException;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -125,6 +126,31 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		});
 		mnOption.add(bgSelect);
 
+		JMenuItem alphaSel = new JMenuItem("alpha");
+		alphaSel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				float alpha;
+				do {
+					try {
+						alpha = Float.parseFloat(JOptionPane.showInputDialog(
+								MainFrame.this, "Choose alpha between 0 and 1",
+								bgPanel.getAlpha()));
+						if (alpha < 0 || alpha > 1)
+							throw new NumberFormatException();
+					} catch (NumberFormatException nfe) {
+						JOptionPane.showMessageDialog(MainFrame.this,
+								"invalid input", "ERROR",
+								JOptionPane.ERROR_MESSAGE);
+						continue;
+					}
+					break;
+				} while (true);
+				bgPanel.setAlpha(alpha);
+			}
+		});
+		mnOption.add(alphaSel);
+
 		chckbxmntmMute = new JCheckBoxMenuItem("mute");
 		mnOption.add(chckbxmntmMute);
 
@@ -178,6 +204,10 @@ public class MainFrame extends JFrame implements ClientCallBack {
 
 	public void init(Properties p) {
 		// get color
+		if (!Boolean.parseBoolean(p.getProperty("rememberSetting", "false"))) {
+			publicPanel.loadConfigPanel();
+			return;
+		}
 		String value = p.getProperty("color", Color.BLACK.toString())
 				.substring(14);
 		int pos = value.indexOf("=") + 1;
@@ -210,6 +240,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			ImageIcon img = new ImageIcon(bg);
 			bgPanel.setImage(img);
 		}
+		bgPanel.setAlpha(Float.parseFloat(p.getProperty("alpha", "1")));
 
 		publicPanel.loadConfigPanel();
 	}
@@ -359,6 +390,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		p.setProperty("mainY", getY() + "");
 		p.setProperty("mute", chckbxmntmMute.isSelected() + "");
 		p.setProperty("background", bgPanel.getImage());
+		p.setProperty("alpha", bgPanel.getAlpha() + "");
 		return p;
 	}
 

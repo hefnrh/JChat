@@ -9,13 +9,15 @@ import javax.swing.JPanel;
 
 public class BgPanel extends JPanel {
 	private ImageIcon image;
+	private float alpha;
 	
-	public BgPanel(ImageIcon image) {
+	public BgPanel(ImageIcon image, float alpha) {
 		this.image = image;
 		setLayout(null);
+		this.alpha = alpha;
 	}
 	public BgPanel() {
-		this(null);
+		this(null, 1);
 	}
 	
 	@Override
@@ -24,7 +26,7 @@ public class BgPanel extends JPanel {
 		if (image == null)
 			return;
 		Graphics g1 = g.create();
-		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1);
+		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) alpha);
 		((Graphics2D)g).setComposite(ac);
 		((Graphics2D)g).drawImage(image.getImage(), 0, 0, this.getWidth(), this.getHeight(), this);
 		super.paintChildren(g1);
@@ -41,4 +43,12 @@ public class BgPanel extends JPanel {
 		return image.toString();
 	}
 	
+	public void setAlpha(float alpha) {
+		this.alpha = alpha;
+		repaint();
+	}
+	
+	public float getAlpha() {
+		return alpha;
+	}
 }
