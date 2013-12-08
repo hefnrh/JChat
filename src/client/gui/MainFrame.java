@@ -1,6 +1,7 @@
 package client.gui;
 
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,17 +10,18 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.naming.NameNotFoundException;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -161,8 +163,21 @@ public class MainFrame extends JFrame implements ClientCallBack {
 		mntmAbout.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(MainFrame.this,
-						"author: GuYifan\nhttps://github.com/hefnrh", "ABOUT",
+				JLabel label = new JLabel("<html><a href=\"\">author: GuYifan</a></html>");
+				label.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if (e.getButton() == MouseEvent.BUTTON1) {
+							try {
+								Desktop.getDesktop().browse(new URI("https://github.com/hefnrh"));
+							} catch (Exception e1) {
+								e1.printStackTrace();
+							}
+						}
+					}
+				});
+				label.setToolTipText("https://github.com/hefnrh");
+				JOptionPane.showMessageDialog(MainFrame.this, label, "ABOUT",
 						JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
