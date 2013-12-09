@@ -59,6 +59,14 @@ public class ClientListener extends Thread {
 			String loginMsg = br.readLine();
 			final String name = loginMsg.substring(loginMsg.indexOf(" $") + 2);
 			this.name = name;
+			if (name.length() <= 0) {
+				send("$error $username can't be null!");
+				return;
+			}
+			if (name.contains(" ") || name.contains("\t")) {
+				send("$error $username can't contain space or tab!");
+				return;
+			}
 			if (!ce.add(name, this)) {
 				send("$error $username already in use!");
 				return;

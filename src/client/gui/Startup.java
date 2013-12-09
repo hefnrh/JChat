@@ -102,6 +102,12 @@ public class Startup extends JFrame {
 					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+		if (name.length() < 6) {
+			JOptionPane.showMessageDialog(this,
+					"user name must has at least 6 characters!", "ERROR",
+					JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		String host = textField_1.getText().trim();
 		int port;
 		try {
