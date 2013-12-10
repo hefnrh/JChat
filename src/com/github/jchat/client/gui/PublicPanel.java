@@ -169,7 +169,7 @@ public class PublicPanel extends ChatPanel {
 		for (String name : user) {
 			if (name.length() == 0)
 				continue;
-			onlineModel.removeElement(name);
+			onlineModel.removeElement(new User(name));
 			sb.append(name);
 			sb.append(", ");
 		}
@@ -196,7 +196,11 @@ public class PublicPanel extends ChatPanel {
 		}
 		@Override
 		public boolean equals(Object o) {
-			return name.equals(o);
+			boolean res = false;
+			if (o instanceof User) {
+				res = ((User) o).name.equals(name);
+			}
+			return name.equals(o) || res;
 		}
 		@Override
 		public int hashCode() {
