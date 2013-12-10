@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingConstants;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
@@ -59,7 +60,8 @@ public abstract class ChatPanel extends JPanel {
 			public Component getListCellRendererComponent(
 					JList<? extends ImageIcon> list, ImageIcon value,
 					int index, boolean isSelected, boolean cellHasFocus) {
-				return new JLabel(value);
+				JLabel label = new JLabel(value, SwingConstants.LEFT);
+				return label;
 			}
 		});
 		faceBox.addActionListener(new ActionListener() {
@@ -111,7 +113,7 @@ public abstract class ChatPanel extends JPanel {
 	private ImageIcon[] loadFaces() {
 		if (faces != null)
 			return faces;
-		String[] path = new String[12];
+		String[] path = new String[39];
 		for (int i = 0; i < path.length; ++i) {
 			path[i] = "face/" + (i + 1) + ".jpg";
 		}
