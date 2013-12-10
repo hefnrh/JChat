@@ -1,4 +1,4 @@
-package client.core;
+package com.github.jchat.client.core;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,8 +18,8 @@ import java.util.regex.Pattern;
 
 import javax.sound.sampled.LineUnavailableException;
 
-import client.gui.multimedia.SoundCapturer;
-import client.gui.multimedia.SoundPlayer;
+import com.github.jchat.client.gui.multimedia.SoundCapturer;
+import com.github.jchat.client.gui.multimedia.SoundPlayer;
 
 /**
  * ClientCore has the core functions of the chat system client. It listens

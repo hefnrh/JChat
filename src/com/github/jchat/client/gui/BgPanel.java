@@ -1,4 +1,4 @@
-package client.gui;
+package com.github.jchat.client.gui;
 
 import java.awt.AlphaComposite;
 import java.awt.Graphics;

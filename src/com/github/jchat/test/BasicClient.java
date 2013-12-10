@@ -1,12 +1,12 @@
-package test;
+package com.github.jchat.test;
 
 import java.io.File;
 
-import server.core.Server;
-import client.core.ClientCallBack;
-import client.core.ClientCore;
-import client.core.Messenger;
-import client.gui.Startup;
+import com.github.jchat.client.core.ClientCallBack;
+import com.github.jchat.client.core.ClientCore;
+import com.github.jchat.client.core.Messenger;
+import com.github.jchat.client.gui.Startup;
+import com.github.jchat.server.core.Server;
 
 /**
  * this class is used to test basic chat system functions

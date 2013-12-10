@@ -1,4 +1,4 @@
-package client.core;
+package com.github.jchat.client.core;
 
 
 public interface ClientCallBack {

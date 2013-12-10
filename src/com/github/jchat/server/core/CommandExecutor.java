@@ -1,4 +1,4 @@
-package server.core;
+package com.github.jchat.server.core;
 
 public interface CommandExecutor {
 

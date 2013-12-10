@@ -1,4 +1,4 @@
-package client.gui;
+package com.github.jchat.client.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,7 +17,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
-import client.core.ClientCore;
+import com.github.jchat.client.core.ClientCore;
 
 public class Startup extends JFrame {
 	private JRadioButton rdbtnRememberAll;

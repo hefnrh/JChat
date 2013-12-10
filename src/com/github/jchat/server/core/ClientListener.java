@@ -1,4 +1,4 @@
-package server.core;
+package com.github.jchat.server.core;
 
 import java.io.BufferedReader;
 import java.io.IOException;

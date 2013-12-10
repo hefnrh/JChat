@@ -1,4 +1,4 @@
-package client.gui.multimedia;
+package com.github.jchat.client.gui.multimedia;
 
 import java.io.IOException;
 import java.io.InputStream;

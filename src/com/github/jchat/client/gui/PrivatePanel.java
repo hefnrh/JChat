@@ -1,4 +1,4 @@
-package client.gui;
+package com.github.jchat.client.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,7 +11,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
-import client.core.Messenger;
+import com.github.jchat.client.core.Messenger;
 
 public class PrivatePanel extends ChatPanel {
 	private String parent;

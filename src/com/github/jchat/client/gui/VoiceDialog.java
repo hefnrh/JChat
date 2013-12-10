@@ -1,4 +1,4 @@
-package client.gui;
+package com.github.jchat.client.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,7 +8,7 @@ import java.awt.event.WindowEvent;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 
-import client.core.Messenger;
+import com.github.jchat.client.core.Messenger;
 
 public class VoiceDialog extends JDialog {
 	private Messenger m;

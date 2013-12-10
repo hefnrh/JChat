@@ -1,4 +1,4 @@
-package client.gui;
+package com.github.jchat.client.gui;
 
 import java.awt.Color;
 import java.awt.Desktop;
@@ -31,9 +31,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
-import client.core.ClientCallBack;
-import client.core.Messenger;
-import client.gui.multimedia.SoundPlayer;
+import com.github.jchat.client.core.ClientCallBack;
+import com.github.jchat.client.core.Messenger;
+import com.github.jchat.client.gui.multimedia.SoundPlayer;
 
 public class MainFrame extends JFrame implements ClientCallBack {
 	private Startup parent;

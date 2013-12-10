@@ -1,4 +1,4 @@
-package client.gui;
+package com.github.jchat.client.gui;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -25,7 +25,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import client.core.Messenger;
+import com.github.jchat.client.core.Messenger;
 
 public abstract class ChatPanel extends JPanel {
 

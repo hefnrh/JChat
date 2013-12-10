@@ -1,4 +1,4 @@
-package client.gui;
+package com.github.jchat.client.gui;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -18,7 +18,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 
-import client.core.Messenger;
+import com.github.jchat.client.core.Messenger;
 
 public class PublicPanel extends ChatPanel {
 	private JList<User> list;
@@ -138,12 +138,11 @@ public class PublicPanel extends ChatPanel {
 	}
 
 	public void addUser(String[] user) {
-		// TODO sort
 		StringBuilder sb = new StringBuilder();
 		for (String name : user) {
 			if (name.length() == 0)
 				continue;
-			onlineModel.addElement(new User(name));
+			addSingleUser(name);
 			sb.append(name);
 			sb.append(", ");
 		}
@@ -152,6 +151,19 @@ public class PublicPanel extends ChatPanel {
 		appendSystemMessage(sb.toString());
 	}
 
+	private void addSingleUser(String user) {
+		User u = new User(user);
+		if (onlineModel.isEmpty()) {
+			onlineModel.addElement(u);
+			return;
+		}
+		int index = 0;
+		for (int j = onlineModel.getSize(); index < j; ++index) {
+			if (onlineModel.elementAt(index).name.compareToIgnoreCase(user) > 0)
+				break;
+		}
+		onlineModel.add(index, u);
+	}
 	public void removeUser(String[] user) {
 		StringBuilder sb = new StringBuilder();
 		for (String name : user) {
