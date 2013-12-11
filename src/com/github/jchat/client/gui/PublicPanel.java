@@ -153,10 +153,6 @@ public class PublicPanel extends ChatPanel {
 
 	private void addSingleUser(String user) {
 		User u = new User(user);
-		if (onlineModel.isEmpty()) {
-			onlineModel.addElement(u);
-			return;
-		}
 		int index = 0;
 		for (int j = onlineModel.getSize(); index < j; ++index) {
 			if (onlineModel.elementAt(index).name.compareToIgnoreCase(user) > 0)
