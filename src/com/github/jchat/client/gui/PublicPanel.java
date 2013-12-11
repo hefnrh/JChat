@@ -155,7 +155,7 @@ public class PublicPanel extends ChatPanel {
 		User u = new User(user);
 		int index = 0;
 		for (int j = onlineModel.getSize(); index < j; ++index) {
-			if (onlineModel.elementAt(index).name.compareToIgnoreCase(user) > 0)
+			if (onlineModel.elementAt(index).name.compareTo(user) > 0)
 				break;
 		}
 		onlineModel.add(index, u);
