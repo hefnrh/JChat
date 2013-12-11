@@ -79,6 +79,7 @@ public class ClientListener extends Thread {
 					System.out.println("read null from " + name);
 					throw new IOException();
 				}
+				System.out.println(name + ": " + msg);
 				pool.execute(new Runnable() {
 					@Override
 					public void run() {
