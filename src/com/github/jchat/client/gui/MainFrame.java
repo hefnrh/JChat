@@ -451,7 +451,7 @@ public class MainFrame extends JFrame implements ClientCallBack {
 			return;
 		}
 		int res = JOptionPane.showConfirmDialog(this, speaker
-				+ "wants to voice chat with you", "voice chat?",
+				+ " wants to voice chat with you", "voice chat?",
 				JOptionPane.YES_NO_OPTION);
 		if (res != JOptionPane.YES_OPTION) {
 			m.voiceRespond(speaker, false);
