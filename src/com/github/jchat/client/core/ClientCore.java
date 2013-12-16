@@ -42,7 +42,7 @@ public class ClientCore implements Messenger {
 	private SoundPlayer player;
 	private SoundCapturer cap;
 
-	private Pattern p = Pattern.compile("[$\\s]+");
+	private Pattern p = Pattern.compile("^[$]|[ ]+[$]");
 
 	public ClientCore(ClientCallBack ccb) {
 		clientCallBack = ccb;

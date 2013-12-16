@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  */
 public class Server implements CommandExecutor {
 
-	private Pattern p = Pattern.compile("[$\\s]+");
+	private Pattern p = Pattern.compile("^[$]|[ ]+[$]");
 	private Map<String, ClientListener> clients = new HashMap<>();
 	private Thread listener;
 	// for synchronize
