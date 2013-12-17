@@ -464,6 +464,8 @@ public class MainFrame extends JFrame implements ClientCallBack {
 	@Override
 	public void voiceResponse(String listener, boolean accepted, int outPort,
 			int inPort) {
+		if (!chckbxmntmMute.isSelected())
+			playNotify();
 		((PrivatePanel) privatePanel.get(listener)).setUnreqed();
 		if (!accepted) {
 			JOptionPane.showMessageDialog(this, listener
