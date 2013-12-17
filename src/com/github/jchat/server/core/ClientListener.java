@@ -3,6 +3,7 @@ package com.github.jchat.server.core;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -41,7 +42,7 @@ public class ClientListener extends Thread {
 			return false;
 		if (pw == null) {
 			try {
-				pw = new PrintWriter(sock.getOutputStream(), true);
+				pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream(), "UTF-8"), true);
 			} catch (IOException e) {
 				ce.remove(name);
 				return false;
@@ -54,7 +55,7 @@ public class ClientListener extends Thread {
 	@Override
 	public void run() {
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(
-				sock.getInputStream()));) {
+				sock.getInputStream(), "UTF-8"));) {
 			// first message is login command
 			String loginMsg = br.readLine();
 			final String name = loginMsg.substring(loginMsg.indexOf(" $") + 2);

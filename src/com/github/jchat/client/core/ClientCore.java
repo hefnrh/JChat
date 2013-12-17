@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -219,7 +220,7 @@ public class ClientCore implements Messenger {
 			return false;
 		if (pw == null) {
 			try {
-				pw = new PrintWriter(sock.getOutputStream(), true);
+				pw = new PrintWriter(new OutputStreamWriter(sock.getOutputStream(), "UTF-8"), true);
 			} catch (IOException e) {
 				clientCallBack.error(e.getMessage());
 				return false;
@@ -239,7 +240,7 @@ public class ClientCore implements Messenger {
 			@Override
 			public void run() {
 				try (BufferedReader br = new BufferedReader(
-						new InputStreamReader(sock.getInputStream()));) {
+						new InputStreamReader(sock.getInputStream(), "UTF-8"));) {
 					while (sock != null && sock.isConnected()
 							&& !sock.isInputShutdown()) {
 						final String msg = br.readLine();
